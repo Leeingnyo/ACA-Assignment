@@ -55,7 +55,12 @@ private:
     int width;
     int height;
 
-    bool is_mouse_left_clicked = true;
+    bool is_mouse_left_clicked = false;
+    bool is_previous_position_available = false;
+
+    double prev_x;
+    double prev_y;
+    double prev_z;
 public:
     static Screen* current_screen;
 
@@ -89,22 +94,19 @@ public:
     }
 
     void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-        static double prev_x = 0;
-        static double prev_y = 0;
-        static double prev_z = 0;
-
         if (!is_mouse_left_clicked){
             return;
         }
 
         static glm::quat q(1, 0, 0, 0);
 
-        double x = (xpos - width / 2) / (width / 2);
-        double y = -(ypos - height / 2) / (height / 2);
+        double unit = width > height ? height / 2.0 : width / 2.0; // small one
+        double x = (xpos - width / 2) / unit;
+        double y = -(ypos - height / 2) / unit; // normalize
         double r = sqrt(x * x + y * y);
-        double z = r >= 1 ? 0 : sqrt(1 - r * r);
+        double z = r >= 1 ? 0 : sqrt(1 - r * r); // get z (on sphere)
 
-        if (!(prev_x == 0 && prev_y == 0)){
+        if (is_previous_position_available) {
             glm::vec3 now(x, y, z);
             glm::vec3 prev(prev_x, prev_y, prev_z);
 
@@ -117,7 +119,7 @@ public:
             float cos = sqrt((costheta + 1) / 2.0f);
             float sin = sqrt((1 - costheta) / 2.0f);
 
-            if (sin < 0.002f){
+            if (sin < 0.002f || isnanf(sin)){
                 sin = 0;
                 cos = 1;
             }
@@ -133,6 +135,18 @@ public:
         prev_x = x;
         prev_y = y;
         prev_z = z;
+        is_previous_position_available = true;
+    }
+
+    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            is_mouse_left_clicked = true;
+            is_previous_position_available = false;
+        }
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+            is_mouse_left_clicked = false;
+            is_previous_position_available = false;
+        }
     }
 };
 
@@ -140,6 +154,10 @@ Screen* Screen::current_screen;
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     Screen::current_screen->cursor_position_callback(window, xpos, ypos);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    Screen::current_screen->mouse_button_callback(window, button, action, mods);
 }
 
 int main () {
@@ -164,13 +182,13 @@ int main () {
     // glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     // glfwSetScrollCallback(window, scroll_callback);
-    // glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSwapInterval(1);
 
-    // glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
-    // glFrontFace(GL_CW);
-    // glDepthFunc(GL_LESS);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glDepthFunc(GL_LESS);
 
     // Light
     // glEnable(GL_LIGHTING);
@@ -238,8 +256,8 @@ int main () {
             glColor3f(1, 1, 1);
             glBegin(GL_TRIANGLES);
             glVertex3f(1, 0, 0);
-            glVertex3f(0, 1, 0);
             glVertex3f(0, 0, 1);
+            glVertex3f(0, 1, 0);
             glEnd();
 
             glColor3f(1, 0, 0);
