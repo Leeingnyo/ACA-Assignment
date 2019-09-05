@@ -83,6 +83,31 @@ int main () {
             // glTranslatef(0, -0.5, 0);
             // glShadeModel(GL_SMOOTH);
 
+            // x y
+            glColor3f(1, 1, 0);
+            glBegin(GL_TRIANGLES);
+            glVertex3f(0, 0, 0);
+            glVertex3f(1, 0, 0);
+            glVertex3f(0, 1, 0);
+            glEnd();
+
+            // y z
+            glColor3f(0, 1, 1);
+            glBegin(GL_TRIANGLES);
+            glVertex3f(0, 0, 0);
+            glVertex3f(0, 1, 0);
+            glVertex3f(0, 0, 1);
+            glEnd();
+
+            // z x
+            glColor3f(1, 0, 1);
+            glBegin(GL_TRIANGLES);
+            glVertex3f(0, 0, 0);
+            glVertex3f(0, 0, 1);
+            glVertex3f(1, 0, 0);
+            glEnd();
+
+            // x y z
             glColor3f(1, 1, 1);
             glBegin(GL_TRIANGLES);
             glVertex3f(1, 0, 0);
