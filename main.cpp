@@ -47,14 +47,16 @@ int main () {
 
     while (!glfwWindowShouldClose(window)) {
         // Render here
-        glfwGetFramebufferSize(window, screen.getWidthPointer(), screen.getHeightPointer());
-        glViewport(0, 0, screen.getWidth(), screen.getHeight());
+        glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
+                               Screen::current_screen->getHeightPointer());
+        glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         { // projection
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(screen.getCamera().getFov(), screen.getAspect(), 0.1f, 100.0f);
+            gluPerspective(Screen::current_screen->getCamera().getFov(),
+                           Screen::current_screen->getAspect(), 0.1f, 100.0f);
         }
 
         { // display
@@ -70,9 +72,9 @@ int main () {
             glLightfv(GL_LIGHT0, GL_POSITION, position);
             */
 
-            const glm::vec3& eye = screen.getCamera().getEye();
-            const glm::vec3& ori = screen.getCamera().getOrigin();
-            const glm::vec3& up = screen.getCamera().getUp();
+            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
+            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
+            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
     	    gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
 
             // glTranslatef(0, -0.5, 0);
