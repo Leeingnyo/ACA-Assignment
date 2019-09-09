@@ -22,6 +22,9 @@
 #include "geomatric-primitives/cylinder.hpp"
 #include "geomatric-primitives/sphere.hpp"
 
+#include "kinematics/open-gl-joint/open-gl-joint.h"
+#include "kinematics/open-gl-link/open-gl-link.h"
+
 int main () {
     GLFWwindow* window;
     Screen screen = Screen();
