@@ -2,6 +2,8 @@
 
 #include "../glm/glm.hpp"
 
+#define TRANSLATION_UNIT (0.01f)
+
 class Camera {
 private:
     static constexpr float MAX_FOV = 135.f;
@@ -41,5 +43,30 @@ public:
     }
     auto getFar() const {
         return far;
+    }
+
+    void moveUp() {
+        auto up_vector = glm::normalize(up) * TRANSLATION_UNIT;
+        ori += up_vector;
+        eye += up_vector;
+    }
+    void moveDown() {
+        auto up_vector = glm::normalize(up) * TRANSLATION_UNIT;
+        ori -= up_vector;
+        eye -= up_vector;
+    }
+    void moveLeft() {
+        glm::vec3 view_vector = ori - eye;
+        glm::vec3 right_vector = glm::normalize(glm::cross(view_vector, up)) * TRANSLATION_UNIT;
+
+        ori -= right_vector;
+        eye -= right_vector;
+    }
+    void moveRight() {
+        glm::vec3 view_vector = ori - eye;
+        glm::vec3 right_vector = glm::normalize(glm::cross(view_vector, up)) * TRANSLATION_UNIT;
+
+        ori += right_vector;
+        eye += right_vector;
     }
 };

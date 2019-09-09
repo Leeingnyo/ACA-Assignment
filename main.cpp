@@ -29,7 +29,7 @@ int main () {
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
-    // glfwSetKeyCallback(window, key_callback);
+    glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     // glfwSetScrollCallback(window, scroll_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);

@@ -65,10 +65,29 @@ void Screen::mouse_button_callback(GLFWwindow* window, int button, int action, i
     }
 }
 
+void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera.moveUp();
+    }
+    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera.moveLeft();
+    }
+    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera.moveDown();
+    }
+    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera.moveRight();
+    }
+}
+
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     Screen::current_screen->cursor_position_callback(window, xpos, ypos);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     Screen::current_screen->mouse_button_callback(window, button, action, mods);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    Screen::current_screen->key_callback(window, key, scancode, action, mods);
 }
