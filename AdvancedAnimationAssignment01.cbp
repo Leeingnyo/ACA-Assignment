@@ -38,7 +38,7 @@
 			<Add library="libglu32.a" />
 			<Add library="libopengl32.a" />
 			<Add library="libgdi32.a" />
-			<Add directory="./" />
+			<Add directory="./lib" />
 		</Linker>
 		<Unit filename="main.cpp" />
 		<Extensions>
