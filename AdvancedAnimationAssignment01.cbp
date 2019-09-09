@@ -40,7 +40,10 @@
 			<Add library="libgdi32.a" />
 			<Add directory="./lib" />
 		</Linker>
+		<Unit filename="camera/camera.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="screen/screen.cpp" />
+		<Unit filename="screen/screen.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
