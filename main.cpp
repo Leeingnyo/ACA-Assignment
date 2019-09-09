@@ -1,11 +1,18 @@
 #include <cstdio>
 #include <vector>
+#define _USE_MATH_DEFINES
 #include <cmath>
+#include <chrono>
+
 #define GLFW_INCLUDE_GLU
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
+
+#define RGBColor(r, g, b) glColor3f((r) / 255.0, (g) / 255.0, (b) / 255.0)
+#define RADIAN_TO_DEGREE(rad) ((rad) * 180.f / M_PI)
+#define IS_NAN3(vec3) (isnanf((vec3).x) || isnanf((vec3).y) || isnanf((vec3).z))
 
 #include "camera/camera.h"
 #include "screen/screen.h"
