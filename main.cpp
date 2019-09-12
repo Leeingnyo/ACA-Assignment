@@ -17,6 +17,7 @@
 #include "camera/camera.h"
 #include "screen/screen.h"
 
+#include "geomatric-primitives/common.hpp"
 #include "geomatric-primitives/cuboid.hpp"
 #include "geomatric-primitives/cylinder.hpp"
 #include "geomatric-primitives/sphere.hpp"
@@ -138,6 +139,33 @@ int main () {
             glVertex3f(0, 0, 0);
             glVertex3f(0, 0, 10); // z
             glEnd();
+
+            glPushMatrix();
+            {
+                const auto& origin = Screen::current_screen->getCamera().getOrigin();
+                glTranslatef(origin.x, origin.y, origin.z);
+                GLfloat matrix[16];
+                getRotation(matrix, Screen::current_screen->getCamera().getEye() -
+                        Screen::current_screen->getCamera().getOrigin(),
+                        Screen::current_screen->getCamera().getUp());
+                glMultMatrixf(matrix);
+
+
+                static auto start = std::chrono::system_clock::now();
+                // glRotatef(((std::chrono::system_clock::now() - start).count() / 1000000) % 360, 0, 0, 1);
+
+                RGBColor(128, 128, 128);
+                glBegin(GL_LINE_STRIP);
+                {
+                    const float length = 5.f;
+                    for (int i = 0; i < 180; i++) {
+                        const float theta = 2 * i * M_PI / 180;
+                        glVertex3f(length * std::cos(theta), length * std::sin(theta), 0);
+                    }
+                }
+                glEnd();
+            }
+            glPopMatrix();
 
             // Swap front and back buffers
             glfwSwapBuffers(window);
