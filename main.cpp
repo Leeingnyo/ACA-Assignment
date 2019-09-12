@@ -17,6 +17,7 @@
 #include "camera/camera.h"
 #include "screen/screen.h"
 
+#include "geomatric-primitives/common.hpp"
 #include "geomatric-primitives/cuboid.hpp"
 #include "geomatric-primitives/cylinder.hpp"
 #include "geomatric-primitives/sphere.hpp"
@@ -139,76 +140,32 @@ int main () {
             glVertex3f(0, 0, 10); // z
             glEnd();
 
-            /*
             glPushMatrix();
             {
-                auto z_base = glm::vec3(0, 0, 1);
-                auto y_base = glm::vec3(0, 1, 0);
-                auto camera_view = Screen::current_screen->getCamera().getEye()
-                        - Screen::current_screen->getCamera().getOrigin();
-                auto camera_up = Screen::current_screen->getCamera().getUp();
-                glm::quat quaternion;
-                { // rotate view
-                    auto cross_vector = glm::normalize(glm::cross(z_base, camera_view));
-                    float cos_theta = glm::dot(z_base, camera_view) / (glm::length(z_base) * glm::length(camera_view));
-                    float tan_theta = sqrt(1 - pow(cos_theta, 2)) / cos_theta;
-                    float theta = RADIAN_TO_DEGREE(std::atan(tan_theta));
-
-                    if (!IS_NAN3(cross_vector)) {
-                        glRotatef(theta, cross_vector.x, cross_vector.y, cross_vector.z);
-                    }
-
-                    float cos_theta_half = sqrt((cos_theta + 1) / 2.0f);
-                    float sin_theta_half = sqrt((1 - cos_theta) / 2.0f);
-                    quaternion = glm::quat(cos_theta_half, sin_theta_half * cross_vector.x,
-                            sin_theta_half * cross_vector.y, sin_theta_half * cross_vector.z);
-                }
-
-                glPushMatrix();
-                { // rotate up
-                    auto rotated_y_base = y_base * quaternion;
-                    auto cross_vector = glm::normalize(glm::cross(rotated_y_base, camera_up));
-                    float cos_theta = glm::dot(rotated_y_base, camera_up) / (glm::length(rotated_y_base) * glm::length(camera_up));
-                    float tan_theta = sqrt(1 - pow(cos_theta, 2)) / cos_theta;
-                    float theta = RADIAN_TO_DEGREE(std::atan(tan_theta));
-                    printf("(%f, %f, %f) (%f, %f, %f) (%f, %f, %f) (%f, %f, %f) %f\n",
-                            cross_vector.x, cross_vector.y, cross_vector.z,
-                            glm::normalize(camera_view).x, glm::normalize(camera_view).y, glm::normalize(camera_view).z,
-                            glm::normalize(rotated_y_base).x, glm::normalize(rotated_y_base).y, glm::normalize(rotated_y_base).z,
-                            glm::normalize(camera_up).x, glm::normalize(camera_up).y, glm::normalize(camera_up).z,
-                            theta);
-
-                    if (!IS_NAN3(cross_vector)) {
-                        // auto rotated_cross_vector = quaternion * cross_vector;
-                        glRotatef(theta, cross_vector.x, cross_vector.y, cross_vector.z);
-                    }
+                const auto& origin = Screen::current_screen->getCamera().getOrigin();
+                glTranslatef(origin.x, origin.y, origin.z);
+                GLfloat matrix[16];
+                getRotation(matrix, Screen::current_screen->getCamera().getEye() -
+                        Screen::current_screen->getCamera().getOrigin(),
+                        Screen::current_screen->getCamera().getUp());
+                glMultMatrixf(matrix);
 
 
-                    RGBColor(255, 0, 255);
-                    glBegin(GL_LINE_STRIP);
-                    glVertex3f(2.f, 0.f, 0.f);
-                    glVertex3f(1.414f, 1.414f, 0.f);
-                    glVertex3f(0.f, 2.f, 0.f);
-                    glVertex3f(-1.414f, 1.414f, 0.f);
-                    glVertex3f(-2.f, 0.f, 0.f);
-                    glEnd();
-                }
-                glPopMatrix();
-
-                static auto origin = std::chrono::system_clock::now();
-                // glRotatef(((std::chrono::system_clock::now() - origin).count() / 1000000) % 360, 0, 0, 1);
+                static auto start = std::chrono::system_clock::now();
+                // glRotatef(((std::chrono::system_clock::now() - start).count() / 1000000) % 360, 0, 0, 1);
 
                 RGBColor(128, 128, 128);
                 glBegin(GL_LINE_STRIP);
-                glVertex3f(2.f, 0.f, 0.f);
-                glVertex3f(1.414f, 1.414f, 0.f);
-                glVertex3f(0.f, 2.f, 0.f);
-                glVertex3f(-1.414f, 1.414f, 0.f);
-                glVertex3f(-2.f, 0.f, 0.f);
+                {
+                    const float length = 5.f;
+                    for (int i = 0; i < 180; i++) {
+                        const float theta = 2 * i * M_PI / 180;
+                        glVertex3f(length * std::cos(theta), length * std::sin(theta), 0);
+                    }
+                }
                 glEnd();
             }
             glPopMatrix();
-            */
 
             // Swap front and back buffers
             glfwSwapBuffers(window);
