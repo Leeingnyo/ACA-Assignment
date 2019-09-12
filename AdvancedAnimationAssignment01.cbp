@@ -41,6 +41,14 @@
 			<Add directory="./lib" />
 		</Linker>
 		<Unit filename="camera/camera.h" />
+		<Unit filename="geomatric-primitives/common.cpp" />
+		<Unit filename="geomatric-primitives/common.hpp" />
+		<Unit filename="geomatric-primitives/cuboid.cpp" />
+		<Unit filename="geomatric-primitives/cuboid.hpp" />
+		<Unit filename="geomatric-primitives/cylinder.cpp" />
+		<Unit filename="geomatric-primitives/cylinder.hpp" />
+		<Unit filename="geomatric-primitives/sphere.cpp" />
+		<Unit filename="geomatric-primitives/sphere.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />

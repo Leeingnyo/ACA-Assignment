@@ -17,6 +17,10 @@
 #include "camera/camera.h"
 #include "screen/screen.h"
 
+#include "geomatric-primitives/cuboid.hpp"
+#include "geomatric-primitives/cylinder.hpp"
+#include "geomatric-primitives/sphere.hpp"
+
 int main () {
     GLFWwindow* window;
     Screen screen = Screen();
