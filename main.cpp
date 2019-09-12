@@ -89,59 +89,22 @@ int main () {
             const glm::vec3& up = Screen::current_screen->getCamera().getUp();
     	    gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
 
-            // glTranslatef(0, -0.5, 0);
-            // glShadeModel(GL_SMOOTH);
-
-            // x y
-            glColor3f(1, 1, 0);
-            glBegin(GL_TRIANGLES);
-            glVertex3f(0, 0, 0);
-            glVertex3f(1, 0, 0);
-            glVertex3f(0, 1, 0);
-            glEnd();
-
-            // y z
-            glColor3f(0, 1, 1);
-            glBegin(GL_TRIANGLES);
-            glVertex3f(0, 0, 0);
-            glVertex3f(0, 1, 0);
-            glVertex3f(0, 0, 1);
-            glEnd();
-
-            // z x
-            glColor3f(1, 0, 1);
-            glBegin(GL_TRIANGLES);
-            glVertex3f(0, 0, 0);
-            glVertex3f(0, 0, 1);
-            glVertex3f(1, 0, 0);
-            glEnd();
-
-            // x y z
-            glColor3f(1, 1, 1);
-            glBegin(GL_TRIANGLES);
-            glVertex3f(1, 0, 0);
-            glVertex3f(0, 0, 1);
-            glVertex3f(0, 1, 0);
-            glEnd();
-
+            glBegin(GL_LINES);
             glColor3f(1, 0, 0);
-            glBegin(GL_LINES);
-            glVertex3f(0, 0, 0);
+            glVertex3f(-10, 0, 0);
             glVertex3f(10, 0, 0); // x
-            glEnd();
+
             glColor3f(0, 1, 0);
-            glBegin(GL_LINES);
-            glVertex3f(0, 0, 0);
+            glVertex3f(0, -10, 0);
             glVertex3f(0, 10, 0); // y
-            glEnd();
+
             glColor3f(0, 0, 1);
-            glBegin(GL_LINES);
-            glVertex3f(0, 0, 0);
+            glVertex3f(0, 0, -10);
             glVertex3f(0, 0, 10); // z
             glEnd();
 
             glPushMatrix();
-            {
+            { // display object independently of camera
                 const auto& origin = Screen::current_screen->getCamera().getOrigin();
                 glTranslatef(origin.x, origin.y, origin.z);
                 GLfloat matrix[16];
@@ -154,13 +117,19 @@ int main () {
                 static auto start = std::chrono::system_clock::now();
                 // glRotatef(((std::chrono::system_clock::now() - start).count() / 1000000) % 360, 0, 0, 1);
 
-                RGBColor(128, 128, 128);
-                glBegin(GL_LINE_STRIP);
+                RGBColor(255, 255, 255);
+                glBegin(GL_LINES);
                 {
-                    const float length = 5.f;
+                    const int STEPS = 180;
+                    const float UNIT_OF_THETA = 2 * M_PI / 180;
+                    const float LENGTH = 7.5f;
                     for (int i = 0; i < 180; i++) {
-                        const float theta = 2 * i * M_PI / 180;
-                        glVertex3f(length * std::cos(theta), length * std::sin(theta), 0);
+                        const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
+                        const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);
+                        const float Q0 = LENGTH * std::cos(UNIT_OF_THETA * (i +1));
+                        const float Q1 = LENGTH * std::sin(UNIT_OF_THETA * (i +1));
+                        glVertex3f(P0, P1, 0);
+                        glVertex3f(Q0, Q1, 0);
                     }
                 }
                 glEnd();

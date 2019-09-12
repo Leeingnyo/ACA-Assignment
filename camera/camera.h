@@ -9,7 +9,7 @@ private:
     static constexpr float MAX_FOV = 135.f;
     static constexpr float MIN_FOV = 0.0f;
 
-    glm::vec3 eye = {0, 0, 10};
+    glm::vec3 eye = {0, 0, 20};
     glm::vec3 ori = {0, 0, 0}; // at
     glm::vec3 up = {0, 1, 0};
     float fov = 90.f;
