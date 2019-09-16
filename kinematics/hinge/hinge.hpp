@@ -3,7 +3,7 @@
 #include <cmath>
 #include <memory>
 
-#include "../joint/joint.h"
+#include "../joint/joint.hpp"
 
 class Hinge : Drawable {
 private:

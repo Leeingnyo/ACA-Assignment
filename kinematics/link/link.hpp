@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "../drawable.hpp"
-#include "../joint/joint.h"
+#include "../joint/joint.hpp"
 
 class Joint;
 

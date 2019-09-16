@@ -3,7 +3,7 @@
 
 #include "../../geomatric-primitives/cylinder.hpp"
 
-#include "open-gl-link.h"
+#include "open-gl-link.hpp"
 
 void OpenGLLink::draw() {
     glPushMatrix();

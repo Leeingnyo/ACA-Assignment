@@ -22,8 +22,8 @@
 #include "geomatric-primitives/cylinder.hpp"
 #include "geomatric-primitives/sphere.hpp"
 
-#include "kinematics/open-gl-joint/open-gl-joint.h"
-#include "kinematics/open-gl-link/open-gl-link.h"
+#include "kinematics/open-gl-hinge/open-gl-hinge.hpp"
+#include "kinematics/open-gl-link/open-gl-link.hpp"
 
 int main () {
     GLFWwindow* window;

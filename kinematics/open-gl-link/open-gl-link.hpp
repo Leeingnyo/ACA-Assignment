@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../link/link.h"
+#include "../link/link.hpp"
 
 class OpenGLLink : public Link {
 public:

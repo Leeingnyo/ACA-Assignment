@@ -3,7 +3,7 @@
 
 #include "../../geomatric-primitives/sphere.hpp"
 
-#include "open-gl-joint.h"
+#include "open-gl-joint.hpp"
 
 void OpenGLJoint::draw() {
     glPushMatrix();

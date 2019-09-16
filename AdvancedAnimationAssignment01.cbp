@@ -52,12 +52,12 @@
 		<Unit filename="kinematics/ball-and-socket/ball-and-socket.hpp" />
 		<Unit filename="kinematics/drawable.hpp" />
 		<Unit filename="kinematics/hinge/hinge.hpp" />
-		<Unit filename="kinematics/joint/joint.h" />
-		<Unit filename="kinematics/link/link.h" />
+		<Unit filename="kinematics/joint/joint.hpp" />
+		<Unit filename="kinematics/link/link.hpp" />
 		<Unit filename="kinematics/open-gl-joint/open-gl-joint.cpp" />
 		<Unit filename="kinematics/open-gl-joint/open-gl-joint.h" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.cpp" />
-		<Unit filename="kinematics/open-gl-link/open-gl-link.h" />
+		<Unit filename="kinematics/open-gl-link/open-gl-link.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />
