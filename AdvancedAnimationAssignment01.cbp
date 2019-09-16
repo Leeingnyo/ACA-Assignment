@@ -54,8 +54,8 @@
 		<Unit filename="kinematics/hinge/hinge.hpp" />
 		<Unit filename="kinematics/joint/joint.hpp" />
 		<Unit filename="kinematics/link/link.hpp" />
-		<Unit filename="kinematics/open-gl-joint/open-gl-joint.cpp" />
-		<Unit filename="kinematics/open-gl-joint/open-gl-joint.h" />
+		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.cpp" />
+		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.hpp" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.cpp" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.hpp" />
 		<Unit filename="main.cpp" />
