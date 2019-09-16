@@ -49,7 +49,9 @@
 		<Unit filename="geomatric-primitives/cylinder.hpp" />
 		<Unit filename="geomatric-primitives/sphere.cpp" />
 		<Unit filename="geomatric-primitives/sphere.hpp" />
+		<Unit filename="kinematics/ball-and-socket/ball-and-socket.hpp" />
 		<Unit filename="kinematics/drawable.hpp" />
+		<Unit filename="kinematics/hinge/hinge.hpp" />
 		<Unit filename="kinematics/joint/joint.h" />
 		<Unit filename="kinematics/link/link.h" />
 		<Unit filename="kinematics/open-gl-joint/open-gl-joint.cpp" />
