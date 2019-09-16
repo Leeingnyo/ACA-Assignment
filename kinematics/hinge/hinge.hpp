@@ -5,15 +5,18 @@
 
 #include "../joint/joint.hpp"
 
-class Hinge : Drawable {
+class Hinge : public Joint {
 private:
 public:
-    std::shared_ptr<Joint> joint;
+    glm::vec3 axis;
     float angle; // 0 means straight (range: -180 ~ 180)
     float min_angle = -180.f;
     float max_angle = 180.f;
 
+    Hinge() : Joint(), axis(0, 0, 1), angle(0) {
+    }
+
     void setAngle(float new_angle) {
         angle = std::max(min_angle, std::min(max_angle, new_angle));
     }
-}
+};
