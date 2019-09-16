@@ -75,11 +75,12 @@ void OpenGLSphere::draw() {
     }
     glEnd();
 
+    const auto& last_vertices = vertices_list[vertices_list.size() - 1];
     // 덮개
     glBegin(GL_TRIANGLE_FAN);
     glNormal3f(0, 1, 0);
     glVertex3f(0, radius, 0);
-    for (const auto& vertex : vertices_list[vertices_list.size() - 1]) {
+    for (const auto& vertex : last_vertices) {
         NORMAL_VERTEX(vertex);
         glVertex3f(vertex.x, vertex.y, vertex.z);
     }
@@ -89,7 +90,8 @@ void OpenGLSphere::draw() {
     glBegin(GL_TRIANGLE_FAN);
     glNormal3f(0, -1, 0);
     glVertex3f(0, -radius, 0);
-    for (const auto& vertex : vertices_list[vertices_list.size() - 1]) {
+    for (auto iter = last_vertices.rbegin(); iter != last_vertices.rend(); iter++) {
+        const auto& vertex = *iter;
         NORMAL_VERTEX_NEGATIVE_Y(vertex);
         glVertex3f(vertex.x, -vertex.y, vertex.z);
     }

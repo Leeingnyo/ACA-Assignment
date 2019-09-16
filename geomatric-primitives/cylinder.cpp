@@ -13,6 +13,7 @@ void OpenGLCylinder::draw() {
     float length = glm::length(normal_vector);
 
     GLfloat rotation_matrix[16];
+    glTranslatef(start_point.x, start_point.y, start_point.z);
     getRotationPoint(rotation_matrix, normal_vector, start_point);
     glMultMatrixf(rotation_matrix);
 
