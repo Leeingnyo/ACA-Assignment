@@ -5,7 +5,7 @@
 
 #include "../joint/joint.hpp"
 
-class BallAndSocket : Joint {
+class BallAndSocket : public Joint {
 public:
     glm::vec3 direction;
     glm::vec3 front;
