@@ -1,6 +1,8 @@
 #define GLFW_INCLUDE_GLU
 #include "../../GLFW/glfw3.h"
 
+#include "../../geomatric-primitives/sphere.hpp"
+
 #include "open-gl-joint.h"
 
 void OpenGLJoint::draw() {
@@ -9,25 +11,8 @@ void OpenGLJoint::draw() {
     glRotatef(theta, axis.x, axis.y, axis.z);
 
     glColor3f(1, 0, 0);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 0, 0);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 1, 0);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 1);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(-1, 0, 0);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, -1, 0);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, -1);
-    glEnd();
+    OpenGLSphere sphere = OpenGLSphere(glm::vec3(0, 0, 0), 0.5f);
+    sphere.draw();
 
     if (link) {
         link->draw();
