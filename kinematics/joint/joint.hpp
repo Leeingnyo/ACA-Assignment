@@ -16,4 +16,7 @@ public:
 
     Joint() : link(nullptr), related_position(0, 0, 0) {
     }
+
+    Joint(const glm::vec3 r_p) : link(nullptr), related_position(r_p) {
+    }
 };

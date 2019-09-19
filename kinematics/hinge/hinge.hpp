@@ -16,6 +16,13 @@ public:
     Hinge() : Joint(), axis(0, 0, 1), angle(0) {
     }
 
+    Hinge(const glm::vec3& _axis, float _angle) : axis(_axis), angle(_angle) {
+    }
+
+    Hinge(const glm::vec3& _axis, float _angle, const glm::vec3& r_p) :
+            Joint(r_p), axis(_axis), angle(_angle) {
+    }
+
     void setAngle(float new_angle) {
         angle = std::max(min_angle, std::min(max_angle, new_angle));
     }

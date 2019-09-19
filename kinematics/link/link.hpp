@@ -16,4 +16,7 @@ public:
 
     Link() : length(0) {
     }
+
+    Link(float l) : length(l) {
+    }
 };

@@ -7,5 +7,8 @@ public:
     OpenGLLink() {
     }
 
+    OpenGLLink(float l) : Link(l) {
+    }
+
     virtual void draw();
 };
