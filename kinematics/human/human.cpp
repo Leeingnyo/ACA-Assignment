@@ -21,26 +21,26 @@ OpenGLHuman::OpenGLHuman() {
 
     left_hip_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(0, -1, 0), glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
     left_thigh_link = std::make_shared<OpenGLLink>(3.f);
-    left_knee_joint = std::make_shared<OpenGLHinge>(glm::vec3(-1, 0, 0), 30.f);
+    left_knee_joint = std::make_shared<OpenGLHinge>(glm::vec3(-1, 0, 0), 0.f);
     left_calf_link = std::make_shared<OpenGLLink>(2.8f);
     left_ankle_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
     left_foot_link = std::make_shared<OpenGLLink>(1.6f);
 
-    sacrum_joint = std::make_shared<OpenGLHinge>(glm::vec3(1, 0, 0), 10.f);
+    sacrum_joint = std::make_shared<OpenGLHinge>(glm::vec3(1, 0, 0), 0.f);
     waist_link = std::make_shared<OpenGLLink>(1.2f);
     backbone_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
     backbone_link = std::make_shared<OpenGLLink>(2.4f);
 
     right_shoulder_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(-1, 0, 0));
     right_upper_arm_link = std::make_shared<OpenGLLink>(2.4f);
-    right_elbow_joint = std::make_shared<OpenGLHinge>(glm::vec3(-1, 0, 0), 0.f);
+    right_elbow_joint = std::make_shared<OpenGLHinge>(glm::vec3(1, 0, 0), 0.f);
     right_lower_arm_link = std::make_shared<OpenGLLink>(2.f);
     right_wrist_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
     right_hand_link = std::make_shared<OpenGLLink>(1.2f);
 
     left_shoulder_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(1, 0, 0));
     left_upper_arm_link = std::make_shared<OpenGLLink>(2.4f);
-    left_elbow_joint = std::make_shared<OpenGLHinge>(glm::vec3(1, 0, 0), 90.f);
+    left_elbow_joint = std::make_shared<OpenGLHinge>(glm::vec3(1, 0, 0), 0.f);
     left_lower_arm_link = std::make_shared<OpenGLLink>(2.f);
     left_wrist_joint = std::make_shared<OpenGLBallAndSocket>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
     left_hand_link = std::make_shared<OpenGLLink>(1.2f);
