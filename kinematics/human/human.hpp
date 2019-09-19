@@ -1,48 +1,49 @@
 #include <memory>
 
+#include "../hinge/hinge.hpp"
+#include "../ball-and-socket/ball-and-socket.hpp"
 #include "../link/link.hpp"
-#include "../joint/joint.hpp"
 
 class Human : public Drawable {
 public:
     std::shared_ptr<Link> hips;
 
-    std::shared_ptr<Joint> right_hip_joint;
+    std::shared_ptr<BallAndSocket> right_hip_joint;
     std::shared_ptr<Link> right_thigh_link;
-    std::shared_ptr<Joint> right_knee_joint;
+    std::shared_ptr<Hinge> right_knee_joint;
     std::shared_ptr<Link> right_calf_link;
-    std::shared_ptr<Joint> right_ankle_joint;
+    std::shared_ptr<BallAndSocket> right_ankle_joint;
     std::shared_ptr<Link> right_foot_link;
 
-    std::shared_ptr<Joint> left_hip_joint;
+    std::shared_ptr<BallAndSocket> left_hip_joint;
     std::shared_ptr<Link> left_thigh_link;
-    std::shared_ptr<Joint> left_knee_joint;
+    std::shared_ptr<Hinge> left_knee_joint;
     std::shared_ptr<Link> left_calf_link;
-    std::shared_ptr<Joint> left_ankle_joint;
+    std::shared_ptr<BallAndSocket> left_ankle_joint;
     std::shared_ptr<Link> left_foot_link;
 
-    std::shared_ptr<Joint> sacrum_joint;
+    std::shared_ptr<Hinge> sacrum_joint;
     std::shared_ptr<Link> waist_link;
-    std::shared_ptr<Joint> backbone_joint;
+    std::shared_ptr<BallAndSocket> backbone_joint;
     std::shared_ptr<Link> backbone_link;
 
-    std::shared_ptr<Joint> right_shoulder_joint;
+    std::shared_ptr<BallAndSocket> right_shoulder_joint;
     std::shared_ptr<Link> right_upper_arm_link;
-    std::shared_ptr<Joint> right_elbow_joint;
+    std::shared_ptr<Hinge> right_elbow_joint;
     std::shared_ptr<Link> right_lower_arm_link;
-    std::shared_ptr<Joint> right_wrist_joint;
+    std::shared_ptr<BallAndSocket> right_wrist_joint;
     std::shared_ptr<Link> right_hand_link;
 
-    std::shared_ptr<Joint> left_shoulder_joint;
+    std::shared_ptr<BallAndSocket> left_shoulder_joint;
     std::shared_ptr<Link> left_upper_arm_link;
-    std::shared_ptr<Joint> left_elbow_joint;
+    std::shared_ptr<Hinge> left_elbow_joint;
     std::shared_ptr<Link> left_lower_arm_link;
-    std::shared_ptr<Joint> left_wrist_joint;
+    std::shared_ptr<BallAndSocket> left_wrist_joint;
     std::shared_ptr<Link> left_hand_link;
 
-    std::shared_ptr<Joint> neck_joint;
+    std::shared_ptr<BallAndSocket> neck_joint;
     std::shared_ptr<Link> neck_link;
-    std::shared_ptr<Joint> head_joint;
+    std::shared_ptr<BallAndSocket> head_joint;
     std::shared_ptr<Link> head_link;
     /*
     Hips (Link) (root)
