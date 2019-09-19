@@ -23,7 +23,9 @@
 #include "geomatric-primitives/sphere.hpp"
 
 #include "kinematics/open-gl-hinge/open-gl-hinge.hpp"
+#include "kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.hpp"
 #include "kinematics/open-gl-link/open-gl-link.hpp"
+#include "kinematics/human/human.hpp"
 
 int main () {
     GLFWwindow* window;
@@ -60,6 +62,10 @@ int main () {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
+    OpenGLHuman human = OpenGLHuman();
+
+    auto starttime = std::chrono::system_clock::now();
+
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
@@ -67,11 +73,22 @@ int main () {
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        { // animate
+            auto current = std::chrono::system_clock::now();
+            unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
+            unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
+        }
+
         { // projection
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             gluPerspective(Screen::current_screen->getCamera().getFov(),
                            Screen::current_screen->getAspect(), 0.1f, 100.0f);
+
+            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
+            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
+            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
+            gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
         }
 
         { // display
@@ -87,10 +104,7 @@ int main () {
             glLightfv(GL_LIGHT0, GL_POSITION, position);
             */
 
-            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
-            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
-            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
-    	    gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
+            human.draw();
 
             glBegin(GL_LINES);
             glColor3f(1, 0, 0);
