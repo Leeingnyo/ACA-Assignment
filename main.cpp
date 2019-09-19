@@ -77,6 +77,47 @@ int main () {
             auto current = std::chrono::system_clock::now();
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
+
+            const float shoulder_angle = 30.f;
+            const float elbow_angle = 120.f;
+            human.right_shoulder_joint->direction = glm::vec3(-std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
+            human.right_shoulder_joint->front = glm::vec3(0, 0, 1);
+            human.right_elbow_joint->angle = elbow_angle;
+            human.left_shoulder_joint->direction = glm::vec3(std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
+            human.left_shoulder_joint->front = glm::vec3(0, 0, 1);
+            human.left_elbow_joint->angle = elbow_angle;
+
+            const float one_cycle_per_second = delta_milli * 360 / 1000.f;
+            const float one_radian_per_second = one_cycle_per_second * M_PI / 180.f;
+            const float& x = one_radian_per_second;
+            const float sin_x = std::sin(x);
+            const float cos_x = std::cos(x);
+            const float cycle = std::sin(x / 2);
+            const float cycle_half = std::sin(x / 4);
+            human.backbone_joint->front = glm::vec3(std::sin(cycle * 120 * M_PI / 180),
+                    0, std::cos(cycle * 120 * M_PI / 180));
+            human.backbone_joint->direction  = glm::vec3(std::sin(cycle * 10 * M_PI / 180),
+                    std::cos(cycle * 10 * M_PI / 180), 0);
+
+            human.right_hip_joint->direction = glm::vec3(
+                    -std::sin(-std::max(-cycle * 30, 0.f) * M_PI / 180),
+                    -std::cos(std::max(-cycle * 120, 0.f) * M_PI / 180),
+                    std::sin(std::max(-cycle * 120, 0.f) * M_PI / 180));
+            human.right_hip_joint->front = glm::vec3(
+                    std::sin(std::max(-cycle * 30, 0.f) * M_PI / 180),
+                    std::sin(std::max(-cycle * 90, 0.f) * M_PI / 180),
+                    std::cos(std::max(-cycle * 90, 0.f) * M_PI / 180));
+            human.right_knee_joint->angle = std::max(-cycle * 150, 0.f);
+
+            human.left_hip_joint->direction = glm::vec3(
+                    std::sin(-std::max(cycle * 30, 0.f) * M_PI / 180),
+                    -std::cos(std::max(cycle * 120, 0.f) * M_PI / 180),
+                    std::sin(std::max(cycle * 120, 0.f) * M_PI / 180));
+            human.left_hip_joint->front = glm::vec3(
+                    -std::sin(std::max(cycle * 30, 0.f) * M_PI / 180),
+                    std::sin(std::max(cycle * 90, 0.f) * M_PI / 180),
+                    std::cos(std::max(cycle * 90, 0.f) * M_PI / 180));
+            human.left_knee_joint->angle = std::max(cycle * 150, 0.f);
         }
 
         { // projection
