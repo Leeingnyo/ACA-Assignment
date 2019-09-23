@@ -27,6 +27,10 @@
 #include "kinematics/open-gl-link/open-gl-link.hpp"
 #include "kinematics/human/human.hpp"
 
+#ifndef __WIN32
+#define __int64 long long;
+#endif // __WIN32
+
 int main () {
     GLFWwindow* window;
     Screen screen = Screen();
