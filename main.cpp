@@ -22,6 +22,15 @@
 #include "geomatric-primitives/cylinder.hpp"
 #include "geomatric-primitives/sphere.hpp"
 
+#include "kinematics/open-gl-hinge/open-gl-hinge.hpp"
+#include "kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.hpp"
+#include "kinematics/open-gl-link/open-gl-link.hpp"
+#include "kinematics/human/human.hpp"
+
+#ifndef __WIN32
+#define __int64 long long
+#endif // __WIN32
+
 int main () {
     GLFWwindow* window;
     Screen screen = Screen();
@@ -33,7 +42,7 @@ int main () {
     }
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(960, 720, "Air Dancer", NULL, NULL);
+    window = glfwCreateWindow(960, 720, "Stretch", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -57,6 +66,10 @@ int main () {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
+    OpenGLHuman human = OpenGLHuman();
+
+    auto starttime = std::chrono::system_clock::now();
+
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
@@ -64,11 +77,63 @@ int main () {
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        { // animate
+            auto current = std::chrono::system_clock::now();
+            unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
+            unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
+
+            const float shoulder_angle = 30.f;
+            const float elbow_angle = 120.f;
+            human.right_shoulder_joint->direction = glm::vec3(-std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
+            human.right_shoulder_joint->front = glm::vec3(0, 0, 1);
+            human.right_elbow_joint->angle = elbow_angle;
+            human.left_shoulder_joint->direction = glm::vec3(std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
+            human.left_shoulder_joint->front = glm::vec3(0, 0, 1);
+            human.left_elbow_joint->angle = elbow_angle;
+
+            const float one_cycle_per_second = delta_milli * 360 / 1000.f;
+            const float one_radian_per_second = one_cycle_per_second * M_PI / 180.f;
+            const float& x = one_radian_per_second;
+            const float sin_x = std::sin(x);
+            const float cos_x = std::cos(x);
+            const float cycle = std::sin(x / 2);
+            const float cycle_half = std::sin(x / 4);
+            human.backbone_joint->front = glm::vec3(std::sin(cycle * 120 * M_PI / 180),
+                    0, std::cos(cycle * 120 * M_PI / 180));
+            human.backbone_joint->direction  = glm::vec3(std::sin(cycle * 10 * M_PI / 180),
+                    std::cos(cycle * 10 * M_PI / 180), 0);
+
+            human.right_hip_joint->direction = glm::vec3(
+                    -std::sin(-std::max(-cycle * 30, 0.f) * M_PI / 180),
+                    -std::cos(std::max(-cycle * 120, 0.f) * M_PI / 180),
+                    std::sin(std::max(-cycle * 120, 0.f) * M_PI / 180));
+            human.right_hip_joint->front = glm::vec3(
+                    std::sin(std::max(-cycle * 30, 0.f) * M_PI / 180),
+                    std::sin(std::max(-cycle * 90, 0.f) * M_PI / 180),
+                    std::cos(std::max(-cycle * 90, 0.f) * M_PI / 180));
+            human.right_knee_joint->angle = std::max(-cycle * 150, 0.f);
+
+            human.left_hip_joint->direction = glm::vec3(
+                    std::sin(-std::max(cycle * 30, 0.f) * M_PI / 180),
+                    -std::cos(std::max(cycle * 120, 0.f) * M_PI / 180),
+                    std::sin(std::max(cycle * 120, 0.f) * M_PI / 180));
+            human.left_hip_joint->front = glm::vec3(
+                    -std::sin(std::max(cycle * 30, 0.f) * M_PI / 180),
+                    std::sin(std::max(cycle * 90, 0.f) * M_PI / 180),
+                    std::cos(std::max(cycle * 90, 0.f) * M_PI / 180));
+            human.left_knee_joint->angle = std::max(cycle * 150, 0.f);
+        }
+
         { // projection
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             gluPerspective(Screen::current_screen->getCamera().getFov(),
                            Screen::current_screen->getAspect(), 0.1f, 100.0f);
+
+            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
+            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
+            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
+            gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
         }
 
         { // display
@@ -84,10 +149,7 @@ int main () {
             glLightfv(GL_LIGHT0, GL_POSITION, position);
             */
 
-            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
-            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
-            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
-    	    gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
+            human.draw();
 
             glBegin(GL_LINES);
             glColor3f(1, 0, 0);

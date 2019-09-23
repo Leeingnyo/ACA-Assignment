@@ -54,6 +54,11 @@ void getRotation(GLfloat* matrix, glm::vec3 u, glm::vec3 v) {
     // https://docs.microsoft.com/en-us/windows/win32/opengl/glmultmatrixf
     u = glm::normalize(u);
     v = glm::normalize(v);
+
+    glm::dot(u, v);
+    u = u - glm::dot(u, v) * v;
+    u = glm::normalize(u);
+
     // suppose z -> u, y -> v
     glm::vec3 w = glm::normalize(glm::cross(v, u));
 
