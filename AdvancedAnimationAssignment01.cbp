@@ -40,6 +40,8 @@
 			<Add library="libgdi32.a" />
 			<Add directory="./lib" />
 		</Linker>
+		<Unit filename="bvh-parser/bvh-parser.cpp" />
+		<Unit filename="bvh-parser/bvh-parser.hpp" />
 		<Unit filename="camera/camera.h" />
 		<Unit filename="geomatric-primitives/common.cpp" />
 		<Unit filename="geomatric-primitives/common.hpp" />
