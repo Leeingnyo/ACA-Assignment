@@ -53,6 +53,7 @@
 		<Unit filename="geomatric-primitives/sphere.hpp" />
 		<Unit filename="kinematics/ball-and-socket/ball-and-socket.hpp" />
 		<Unit filename="kinematics/drawable.hpp" />
+		<Unit filename="kinematics/euler-joint/euler-joint.hpp" />
 		<Unit filename="kinematics/hinge/hinge.hpp" />
 		<Unit filename="kinematics/human/human.cpp" />
 		<Unit filename="kinematics/human/human.hpp" />
@@ -60,6 +61,8 @@
 		<Unit filename="kinematics/link/link.hpp" />
 		<Unit filename="kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.cpp" />
 		<Unit filename="kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.hpp" />
+		<Unit filename="kinematics/open-gl-euler-joint/open-gl-euler-joint.cpp" />
+		<Unit filename="kinematics/open-gl-euler-joint/open-gl-euler-joint.hpp" />
 		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.cpp" />
 		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.hpp" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.cpp" />
