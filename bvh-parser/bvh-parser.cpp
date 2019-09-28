@@ -4,12 +4,238 @@ const std::string example = ("HIERARCHY\nROOT pelvis\n{\n	OFFSET 0.000000 0.0000
 
 using namespace inyong_bvh;
 
+void BvhParser::consume(std::deque<BvhToken>& tokens, BvhEnumToken token) {
+    const auto& consumed = tokens[0];
+    if (consumed.token != token) {
+        std::stringstream ss;
+        ss << std::endl << "Position: " << consumed.line << ", " << consumed.column << std::endl <<
+                "the token type is mismatched." << std::endl <<
+                "expected " << TOKEN_NAMES[static_cast<int>(token)] << " but " << TOKEN_NAMES[static_cast<int>(consumed.token)] << " is appeared.";
+        throw std::runtime_error(ss.str());
+    }
+    tokens.pop_front();
+}
+double BvhParser::get_number(std::deque<BvhToken>& tokens) {
+    const auto& peek = tokens[0];
+    double d = std::stod(peek.value);
+    tokens.pop_front();
+    return d;
+}
+int BvhParser::get_number_as_int(std::deque<BvhToken>& tokens) {
+    const auto& peek = tokens[0];
+    double d = std::stoi(peek.value);
+    tokens.pop_front();
+    return d;
+}
+BvhChannels BvhParser::get_channel_value(std::deque<BvhToken>& tokens) {
+    const auto& peek = tokens[0];
+    auto channel = peek.value;
+    if (channel == "Xposition") {
+        return BvhChannels::X_P;
+    }
+    else if (channel == "Yposition") {
+        return BvhChannels::Y_P;
+    }
+    else if (channel == "Zposition") {
+        return BvhChannels::Z_P;
+    }
+    else if (channel == "Xrotation") {
+        return BvhChannels::X_R;
+    }
+    else if (channel == "Yrotation") {
+        return BvhChannels::Y_R;
+    }
+    else if (channel == "Zrotation") {
+        return BvhChannels::Z_R;
+    }
+}
+std::string BvhParser::get_id(std::deque<BvhToken>& tokens) {
+    const auto& peek = tokens[0];
+    auto id = peek.value;
+    tokens.pop_front();
+    return id;
+}
+
+std::shared_ptr<BvhJoint> BvhParser::joint(std::deque<BvhToken>& tokens) {
+    bool is_end_site = false;
+    std::string id;
+
+    std::shared_ptr<BvhJoint> joint = std::make_shared<BvhJoint>();
+
+    const auto& peek = tokens[0];
+
+    if (peek.token == BvhEnumToken::ROOT) {
+        consume(tokens, BvhEnumToken::ROOT);
+        joint->id = get_id(tokens);
+    }
+    else if (peek.token == BvhEnumToken::JOINT) {
+        consume(tokens, BvhEnumToken::JOINT);
+        joint->id = get_id(tokens);
+    }
+    else if (peek.token == BvhEnumToken::END) {
+        consume(tokens, BvhEnumToken::END);
+        consume(tokens, BvhEnumToken::SITE);
+        is_end_site = true;
+    }
+
+    consume(tokens, BvhEnumToken::OPEN_PARENTHESIS);
+    consume(tokens, BvhEnumToken::OFFSET);
+    joint->x_offset = get_number(tokens);
+    joint->y_offset = get_number(tokens);
+    joint->z_offset = get_number(tokens);
+    if (!is_end_site) {
+        consume(tokens, BvhEnumToken::CHANNELS);
+        joint->number_of_channels = get_number_as_int(tokens);
+        for (int i = 0; i < joint->number_of_channels; i++) {
+            joint->channels.push_back(get_channel_value(tokens));
+        }
+        while (tokens[0].token == BvhEnumToken::JOINT || tokens[0].token == BvhEnumToken::END) {
+            joint->child_joints.push_back(BvhParser::joint(tokens));
+        }
+    }
+    consume(tokens, BvhEnumToken::CLOSE_PARENTHESIS);
+}
+
+std::shared_ptr<BvhHierarchy> BvhParser::hierarchy(std::deque<BvhToken>& tokens) {
+    std::shared_ptr<BvhHierarchy> hierarchy = std::make_shared<BvhHierarchy>();
+    consume(tokens, BvhEnumToken::HIERARCHY);
+    hierarchy->root = joint(tokens);
+    return hierarchy;
+}
+
+std::shared_ptr<BvhMotion> BvhParser::motion(std::deque<BvhToken>& tokens) {
+    std::shared_ptr<BvhMotion> motion = std::make_shared<BvhMotion>();
+
+    consume(tokens, BvhEnumToken::MOTION);
+    consume(tokens, BvhEnumToken::FRAMES);
+    consume(tokens, BvhEnumToken::COLON);
+    motion->number_of_frames = get_number_as_int(tokens);
+    consume(tokens, BvhEnumToken::FRAME);
+    consume(tokens, BvhEnumToken::TIME);
+    consume(tokens, BvhEnumToken::COLON);
+    motion->frame_time = get_number(tokens);
+
+    while (tokens.size()) {
+        motion->motion_data.push_back(get_number(tokens));
+    }
+
+    return motion;
+}
+
+std::shared_ptr<std::deque<BvhToken>> BvhParser::scan_from_string(std::string string) {
+    auto deque = std::make_shared<std::deque<BvhToken>>();
+    int length = string.length();
+    clear_internal_variables();
+    int line;
+    int column;
+
+    for (int pos = 0, line = 0, column = 0; pos < length; pos++, column++) {
+        const char& current = string[pos];
+
+        if (current == '\n') {
+            line++;
+            column = 0;
+        }
+
+        if (current == ' ' || current == '\n' || current == '\t' || current == ':' || current == '{' || current == '}') {
+            if (value.length()) {
+                if (is_number) {
+                    deque->push_back(BvhToken(line, column, BvhEnumToken::NUMBER, value));
+                }
+                else {
+                    if (value == "HIERARCHY") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::HIERARCHY));
+                    }
+                    else if (value == "ROOT") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::ROOT));
+                    }
+                    else if (value == "OFFSET") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::OFFSET));
+                    }
+                    else if (value == "CHANNELS") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNELS));
+                    }
+                    else if (value == "Xposition") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "Yposition") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "Zposition") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "Xrotation") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "Yrotation") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "Zrotation") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::CHANNEL_VALUE, value));
+                    }
+                    else if (value == "JOINT") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::JOINT));
+                    }
+                    else if (value == "End") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::END));
+                    }
+                    else if (value == "Site") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::SITE));
+                    }
+                    else if (value == "MOTION") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::MOTION));
+                    }
+                    else if (value == "Frames") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::FRAMES));
+                    }
+                    else if (value == "Frame") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::FRAME));
+                    }
+                    else if (value == "Time") {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::TIME));
+                    }
+                    else {
+                        deque->push_back(BvhToken(line, column, BvhEnumToken::ID, value));
+                    }
+                }
+                clear_internal_variables();
+            }
+
+            if (current == ':') {
+                deque->push_back(BvhToken(line, column, BvhEnumToken::COLON));
+            }
+            else if (current == '{') {
+                deque->push_back(BvhToken(line, column, BvhEnumToken::OPEN_PARENTHESIS));
+            }
+            else if (current == '}') {
+                deque->push_back(BvhToken(line, column, BvhEnumToken::CLOSE_PARENTHESIS));
+            }
+
+            continue;
+        }
+
+        if (current == '-' || current == '.' || (current >= '0' && current <= '9')) {
+            value += current;
+            is_number = true;
+            continue;
+        }
+
+        if (current >= 'A' && 'Z' >= current || current >= 'a' || 'z' >= current || current == '_') {
+            value += current;
+            continue;
+        }
+    }
+
+    return deque;
+}
+
 std::shared_ptr<Bvh> BvhParser::parse_from_tokens(const std::deque<BvhToken>& tokens) {
     std::deque<BvhToken> tokens_for_consume;
     tokens_for_consume.assign(tokens.begin(), tokens.end());
-    hierarchy(tokens_for_consume);
-    motion(tokens_for_consume);
-    return nullptr;
+    std::shared_ptr<Bvh> bvh = std::make_shared<Bvh>();
+    bvh->hierarchy = hierarchy(tokens_for_consume);
+    bvh->motion = motion(tokens_for_consume);
+    return bvh;
 }
 
 /*
