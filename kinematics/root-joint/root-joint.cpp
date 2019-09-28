@@ -8,24 +8,14 @@
 void RootJoint::animate(const int frame_index, std::shared_ptr<Link> link) {
     for (const auto& joint : link->joints) {
         const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
+        const int length = euler_joint->channels.size();
+        std::vector<float> channel_values;
 
-        std::string order_string;
-        switch (euler_joint->order) {
-            case EulerJointOrder::XYZ: order_string = "xyz"; break;
-            case EulerJointOrder::XZY: order_string = "xzy"; break;
-            case EulerJointOrder::YXZ: order_string = "yxz"; break;
-            case EulerJointOrder::YZX: order_string = "yzx"; break;
-            case EulerJointOrder::ZXY: order_string = "zxy"; break;
-            case EulerJointOrder::ZYX: order_string = "zyx"; break;
+        for (int i = 0; i < length; i++) {
+            channel_values.push_back(animation_information[frame_index * number_of_channels + channel_index++]);
         }
-        for (auto character : order_string) {
-            printf("%c %f\n", character, animation_information[frame_index * number_of_channels + channel_index]);
-            switch (character) {
-                case 'x': euler_joint->x = animation_information[frame_index * number_of_channels + channel_index++]; break;
-                case 'y': euler_joint->y = animation_information[frame_index * number_of_channels + channel_index++]; break;
-                case 'z': euler_joint->z = animation_information[frame_index * number_of_channels + channel_index++]; break;
-            }
-        }
+
+        euler_joint->channel_values = channel_values;
 
         if (joint->link) {
             animate(frame_index, joint->link);
