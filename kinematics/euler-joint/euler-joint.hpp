@@ -12,7 +12,7 @@ public:
     std::vector<float> channel_values;
     std::vector<EulerJointChannel> channels;
 
-    EulerJoint() {
+    EulerJoint() : channels() {
     }
     EulerJoint(const std::vector<EulerJointChannel>& _channels) : channels(_channels) {
     }
