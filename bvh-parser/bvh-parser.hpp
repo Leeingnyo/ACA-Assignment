@@ -2,38 +2,8 @@
 #include <deque>
 #include <vector>
 #include <memory>
-#include <sstream>
 
 namespace inyong_bvh {
-
-enum class BvhChannels { X_P, X_R, Y_P, Y_R, Z_P, Z_R };
-
-class BvhHierarchy;
-class BvhMotion;
-
-class Bvh {
-public:
-    std::shared_ptr<BvhHierarchy> hierarchy;
-    std::shared_ptr<BvhMotion> motion;
-};
-
-class BvhJoint {
-public:
-    std::string id;
-    std::vector<BvhChannels> channels;
-    double x_offset;
-    double y_offset;
-    double z_offset;
-    int number_of_channels;
-    std::vector<std::shared_ptr<BvhJoint>> child_joints;
-};
-
-class BvhEndSite {
-public:
-    double x_offset;
-    double y_offset;
-    double z_offset;
-};
 
 enum class BvhEnumToken {
     HIERARCHY, // HIERARCHY
@@ -76,15 +46,19 @@ const char TOKEN_NAMES[][20] = {
     "'Time'",
 };
 
-class BvhToken {
+enum class BvhChannels { X_P, X_R, Y_P, Y_R, Z_P, Z_R };
+
+class BvhJoint {
 public:
-    BvhEnumToken token;
-    std::string value;
-    int line, column;
-    BvhToken(int _line, int _column, BvhEnumToken _token) : line(_line), column(_column), token(_token) {
-    }
-    BvhToken(int _line, int _column, BvhEnumToken _token, std::string _value)
-            : line(_line), column(_column), token(_token), value(_value) {
+    std::string id;
+    std::vector<BvhChannels> channels;
+    double x_offset;
+    double y_offset;
+    double z_offset;
+    int number_of_channels;
+    std::vector<std::shared_ptr<BvhJoint>> child_joints;
+
+    BvhJoint() : child_joints(), channels() {
     }
 };
 
@@ -98,6 +72,27 @@ public:
     int number_of_frames;
     float frame_time;
     std::vector<float> motion_data;
+
+    BvhMotion() : motion_data() {
+    }
+};
+
+class Bvh {
+public:
+    std::shared_ptr<BvhHierarchy> hierarchy;
+    std::shared_ptr<BvhMotion> motion;
+};
+
+class BvhToken {
+public:
+    BvhEnumToken token;
+    std::string value;
+    int line, column;
+    BvhToken(int _line, int _column, BvhEnumToken _token) : line(_line), column(_column), token(_token) {
+    }
+    BvhToken(int _line, int _column, BvhEnumToken _token, std::string _value)
+            : line(_line), column(_column), token(_token), value(_value) {
+    }
 };
 
 class BvhParser {
@@ -120,7 +115,7 @@ class BvhParser {
     std::shared_ptr<BvhMotion> motion(std::deque<BvhToken>& tokens);
 public:
     std::shared_ptr<std::deque<BvhToken>> scan_from_string(std::string string);
-    std::shared_ptr<Bvh> parse_from_tokens(const std::deque<BvhToken>& tokens);
+    std::shared_ptr<Bvh> parse_from_tokens(const std::shared_ptr<std::deque<BvhToken>>& tokens);
 };
 
 }
