@@ -22,7 +22,7 @@ public:
     }
 
     Link(glm::vec3 d) : direction(d) {
-        length = direction.length();
+        length = glm::length(direction);
     }
 
     Link(glm::vec3 d, float l) : length(l) {
