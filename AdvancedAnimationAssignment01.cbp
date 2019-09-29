@@ -52,6 +52,8 @@
 		<Unit filename="geomatric-primitives/sphere.cpp" />
 		<Unit filename="geomatric-primitives/sphere.hpp" />
 		<Unit filename="kinematics/ball-and-socket/ball-and-socket.hpp" />
+		<Unit filename="kinematics/bvh-to-kinematics/bvh-to-kinematics.cpp" />
+		<Unit filename="kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp" />
 		<Unit filename="kinematics/drawable.hpp" />
 		<Unit filename="kinematics/euler-joint/euler-joint.hpp" />
 		<Unit filename="kinematics/hinge/hinge.hpp" />
