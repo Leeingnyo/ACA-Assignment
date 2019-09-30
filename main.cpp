@@ -1,4 +1,6 @@
-#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -35,7 +37,7 @@
 #define __int64 long long
 #endif // __WIN32
 
-int main () {
+int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
     screen.setCurrentScreen();
@@ -70,9 +72,23 @@ int main () {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
-    const std::string example = ("HIERARCHY\nROOT pelvis\n{\n	OFFSET 0.000000 0.000000 0.000000\n	CHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation\n	JOINT lfemur\n	{\n		OFFSET 11.446000 0.000000 0.000000\n		CHANNELS 3 Zrotation Xrotation Yrotation\n		JOINT ltibia\n		{\n			OFFSET 0.000000 -42.030400 0.000000\n			CHANNELS 3 Zrotation Xrotation Yrotation\n			JOINT lfoot\n			{\n				OFFSET 0.000000 -39.930200 0.000000\n				CHANNELS 3 Zrotation Xrotation Yrotation\n				JOINT ltoes\n				{\n					OFFSET 0.000000 0.000000 11.775800\n					CHANNELS 3 Zrotation Xrotation Yrotation\n					End Site\n					{\n					    OFFSET 0.000000 0.000000 5.000000\n					}\n				}\n			}\n		}\n	}\n	JOINT rfemur\n	{\n		OFFSET -11.446000 0.000000 0.000000\n		CHANNELS 3 Zrotation Xrotation Yrotation\n		JOINT rtibia\n		{\n			OFFSET 0.000000 -42.030400 0.000000\n			CHANNELS 3 Zrotation Xrotation Yrotation\n			JOINT rfoot\n			{\n				OFFSET 0.000000 -39.930200 0.000000\n				CHANNELS 3 Zrotation Xrotation Yrotation\n				JOINT rtoes\n				{\n					OFFSET 0.000000 0.000000 11.775800\n					CHANNELS 3 Zrotation Xrotation Yrotation\n					End Site\n					{\n					    OFFSET 0.000000 0.000000 5.000000\n					}\n				}\n			}\n		}\n	}\n	JOINT thorax\n	{\n		OFFSET 0.000000 11.255600 -5.000000\n		CHANNELS 3 Zrotation Xrotation Yrotation\n		JOINT head\n		{\n			OFFSET 0.000000 43.799300 0.000000\n			CHANNELS 3 Zrotation Xrotation Yrotation\n			End Site\n			{\n			    OFFSET 0.000000 5.000000 0.000000\n			}\n		}\n		JOINT lclavicle\n		{\n			OFFSET 0.000000 39.863000 0.000000\n			CHANNELS 3 Zrotation Xrotation Yrotation\n			JOINT lhumerus\n			{\n				OFFSET 17.380600 4.958300 0.000000\n				CHANNELS 3 Zrotation Xrotation Yrotation\n				JOINT lradius\n				{\n					OFFSET 0.000000 -27.561300 0.000000\n					CHANNELS 3 Zrotation Xrotation Yrotation\n					JOINT lhand\n					{\n						OFFSET 0.000000 -26.933000 0.000000\n						CHANNELS 3 Zrotation Xrotation Yrotation\n						End Site\n						{\n						    OFFSET 0.000000 -5.000000 0.000000\n						}\n					}\n				}\n			}\n		}\n		JOINT rclavicle\n		{\n			OFFSET 0.000000 39.863000 0.000000\n			CHANNELS 3 Zrotation Xrotation Yrotation\n			JOINT rhumerus\n			{\n				OFFSET -17.380600 4.958300 0.000000\n				CHANNELS 3 Zrotation Xrotation Yrotation\n				JOINT rradius\n				{\n					OFFSET 0.000000 -27.561300 0.000000\n					CHANNELS 3 Zrotation Xrotation Yrotation\n					JOINT rhand\n					{\n						OFFSET 0.000000 -26.933000 0.000000\n						CHANNELS 3 Zrotation Xrotation Yrotation\n						End Site\n						{\n						    OFFSET 0.000000 -5.000000 0.000000\n						}\n					}\n				}\n			}\n		}\n	}\n}\nMOTION\nFrames: 3\nFrame Time: 0.008342\n59.293900 87.796900 4.760200 -0.467276 -1.378122 -89.563821 -5.641307 2.819435 -8.651036 -0.000000 9.240240 -0.000000 0.000000 3.555270 6.177856 0.000000 -1.301336 -0.000000 -1.803037 2.742629 -3.741876 -0.000000 9.274983 -0.000000 0.000000 3.290364 2.906258 0.000000 -29.528157 0.000000 -4.531867 0.132349 0.213401 15.628959 24.623904 -0.608822 0.394562 0.000000 3.487028 83.769402 0.553653 62.001030 -0.000001 -12.781487 -55.037055 5.615823 0.703335 0.000000 0.095169 -0.000000 -0.923419 -78.312883 9.001808 -58.564139 0.000000 -20.003803 36.764996 -3.936911 -2.063559 -0.000000 \n59.291700 87.793600 4.752400 -0.475906 -1.381233 -89.556452 -5.638376 2.830551 -8.625235 0.000000 9.236131 -0.000000 -0.000000 3.523541 6.156061 0.000000 -1.301682 -0.000000 -1.792531 2.748974 -3.691834 -0.000000 9.276495 0.000000 0.000000 3.262773 2.860635 0.000000 -29.527798 0.000000 -4.547519 0.143945 0.207558 15.646355 24.636287 -0.589535 0.469632 -0.000000 3.531537 83.641881 0.487220 62.085857 -0.000000 -12.806394 -55.155542 5.630933 0.721572 0.000000 0.133438 -0.000000 -0.934718 -78.356085 8.980916 -58.621133 0.000000 -19.969767 36.707936 -3.798525 -2.110204 -0.000000");
+    if (argc <= 1) {
+        std::cout << "Please give bvh file path as the first argument" << std::endl;
+        return -1;
+    }
+    std::ifstream bvh_file(argv[1]);
+    std::string file_content;
+    if (bvh_file.is_open()) {
+        std::stringstream string_stream;
+        string_stream << bvh_file.rdbuf();
+        file_content = string_stream.str();
+        bvh_file.close();
+    } else {
+        std::cout << "Can't open the file" << std::endl;
+        return -2;
+    }
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
-    auto bvh_tokens = parser.scan_from_string(example);
+    auto bvh_tokens = parser.scan_from_string(file_content);
     auto bvh = parser.parse_from_tokens(bvh_tokens);
     auto root = bvh_to_kinematics(bvh);
 
@@ -90,7 +106,7 @@ int main () {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            root->animate((int)(delta_milli / 1000) % 2);
+            root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
         { // projection
