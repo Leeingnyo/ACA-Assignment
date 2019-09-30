@@ -8,6 +8,8 @@
 
 #include "root-joint.hpp"
 
+#define RATIO 0.1f
+
 void RootJoint::animate(const int frame_index, std::shared_ptr<Link> link) {
     for (const auto& joint : link->joints) {
         const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
@@ -41,9 +43,9 @@ void RootJoint::draw() {
     int channel_index = 0;
     for (auto position : channels) {
         switch (position) {
-            case EulerJointChannel::X_P: glTranslatef(channel_values[channel_index++], 0, 0); break;
-            case EulerJointChannel::Y_P: glTranslatef(0, channel_values[channel_index++], 0); break;
-            case EulerJointChannel::Z_P: glTranslatef(0, 0, channel_values[channel_index++]); break;
+            case EulerJointChannel::X_P: glTranslatef(channel_values[channel_index++] * RATIO, 0, 0); break;
+            case EulerJointChannel::Y_P: glTranslatef(0, channel_values[channel_index++] * RATIO, 0); break;
+            case EulerJointChannel::Z_P: glTranslatef(0, 0, channel_values[channel_index++] * RATIO); break;
         }
     }
 

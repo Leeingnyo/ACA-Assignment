@@ -6,6 +6,8 @@
 
 #include "open-gl-link.hpp"
 
+#define SIZE 0.1f
+
 void OpenGLLink::draw() {
     glPushMatrix();
 
@@ -16,8 +18,8 @@ void OpenGLLink::draw() {
     getRotationPoint(matrix, direction, glm::vec3(0, 0, 0));
     glMultMatrixf(matrix);
 
-    if (length > 0.5f) {
-        OpenGLCylinder cylinder = OpenGLCylinder(glm::vec3(0, 0, 0.5f), glm::vec3(0, 0, length - (joints.size() ? 0.5f : 0.f)), 0.5f);
+    if (length > SIZE) {
+        OpenGLCylinder cylinder = OpenGLCylinder(glm::vec3(0, 0, SIZE), glm::vec3(0, 0, length - (joints.size() ? SIZE : 0.f)), SIZE);
         cylinder.draw();
     }
     glPopMatrix();

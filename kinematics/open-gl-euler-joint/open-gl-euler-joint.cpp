@@ -6,6 +6,8 @@
 
 #include "open-gl-euler-joint.hpp"
 
+#define SIZE 0.1f
+
 void OpenGLEulerJoint::draw() {
     glPushMatrix();
     int channel_index = 0;
@@ -26,7 +28,7 @@ void OpenGLEulerJoint::draw() {
     }
 
     glColor3f(1, 0, 0);
-    OpenGLSphere sphere = OpenGLSphere(glm::vec3(0, 0, 0), 0.5f);
+    OpenGLSphere sphere = OpenGLSphere(glm::vec3(0, 0, 0), SIZE);
     sphere.draw();
 
     if (link) {

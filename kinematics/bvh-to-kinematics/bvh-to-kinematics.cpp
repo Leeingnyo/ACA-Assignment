@@ -3,7 +3,7 @@
 #include "../open-gl-link/open-gl-link.hpp"
 #include "bvh-to-kinematics.hpp"
 
-#define RATIO 0.2f
+#define RATIO 0.1f
 
 int number_of_channels = 0;
 
