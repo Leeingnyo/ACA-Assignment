@@ -20,8 +20,8 @@ void RootJoint::animate(const int frame_index, std::shared_ptr<Link> link) {
             euler_joint->channel_values.push_back(animation_information[frame_index * number_of_channels + channel_index++]);
         }
 
-        if (joint->link) {
-            animate(frame_index, joint->link);
+        for (const auto& link : joint->links) {
+            animate(frame_index, link);
         }
     }
 }
@@ -33,7 +33,7 @@ void RootJoint::animate(const int frame_index) {
     for (int i = 0; i < channels.size(); i++) {
         channel_values.push_back(animation_information[frame_index * number_of_channels + channel_index++]);
     }
-    if (link) {
+    for (const auto& link : links) {
         animate(frame_index, link);
     }
 }
@@ -57,7 +57,7 @@ void RootJoint::draw() {
         }
     }
 
-    if (link) {
+    for (const auto& link : links) {
         link->draw();
     }
 

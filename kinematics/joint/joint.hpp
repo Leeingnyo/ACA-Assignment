@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <memory>
 #include "../../glm/glm.hpp"
 
@@ -11,12 +12,12 @@ class Link;
 class Joint : public Drawable {
 private:
 public:
-    std::shared_ptr<Link> link;
+    std::vector<std::shared_ptr<Link>> links;
     glm::vec3 related_position;
 
-    Joint() : link(nullptr), related_position(0, 0, 0) {
+    Joint() : links(), related_position(0, 0, 0) {
     }
 
-    Joint(const glm::vec3 r_p) : link(nullptr), related_position(r_p) {
+    Joint(const glm::vec3 r_p) : links(), related_position(r_p) {
     }
 };

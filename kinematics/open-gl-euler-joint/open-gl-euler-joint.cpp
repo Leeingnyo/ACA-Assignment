@@ -31,7 +31,7 @@ void OpenGLEulerJoint::draw() {
     OpenGLSphere sphere = OpenGLSphere(glm::vec3(0, 0, 0), SIZE);
     sphere.draw();
 
-    if (link) {
+    for (const auto& link : links) {
         link->draw();
     }
 

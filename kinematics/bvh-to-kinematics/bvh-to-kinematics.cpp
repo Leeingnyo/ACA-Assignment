@@ -27,7 +27,7 @@ std::shared_ptr<EulerJoint> bvh_to_euler_joint(const std::shared_ptr<RootJoint>&
         number_of_channels++;
     }
     std::shared_ptr<Link> link = std::make_shared<OpenGLLink>(glm::vec3(bvh_joint->x_offset, bvh_joint->y_offset, bvh_joint->z_offset) * RATIO);
-    euler_joint->link = link;
+    euler_joint->links.push_back(link);
     for (const auto& child_joint : bvh_joint->child_joints) {
         link->joints.push_back(bvh_to_euler_joint(root_joint, child_joint));
     }
@@ -46,7 +46,7 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
     }
     std::shared_ptr<Link> link = std::make_shared<OpenGLLink>();
 
-    root_joint->link = link;
+    root_joint->links.push_back(link);
     for (const auto& child_joint : bvh->hierarchy->root->child_joints) {
         link->joints.push_back(bvh_to_euler_joint(root_joint, child_joint));
     }
