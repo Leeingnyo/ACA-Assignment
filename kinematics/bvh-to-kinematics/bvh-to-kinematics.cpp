@@ -42,6 +42,7 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
     root_joint->number_of_channels = bvh->hierarchy->root->number_of_channels;
     for (int i = 0; i < bvh->hierarchy->root->channels.size(); i++) {
         root_joint->channels.push_back(transfrom_channel_type(bvh->hierarchy->root->channels[i]));
+        number_of_channels++;
     }
     std::shared_ptr<Link> link = std::make_shared<OpenGLLink>();
 
