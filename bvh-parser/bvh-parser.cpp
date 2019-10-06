@@ -138,7 +138,7 @@ std::shared_ptr<std::deque<BvhToken>> BvhParser::scan_from_string(std::string st
             column = 0;
         }
 
-        if (current == ' ' || current == '\n' || current == '\t' || current == ':' || current == '{' || current == '}') {
+        if (current == ' ' || current == '\r' || current == '\n' || current == '\t' || current == ':' || current == '{' || current == '}') {
             if (value.length()) {
                 if (is_number) {
                     deque->push_back(BvhToken(line, column, BvhEnumToken::NUMBER, value));
