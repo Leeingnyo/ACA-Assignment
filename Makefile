@@ -1,6 +1,3 @@
-run: all
-	./bin/AdvancedAnimationAssignment01
-
 all: obj/main.o obj/screen/screen.o obj/kinematics/human/human.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/open-gl-hinge/open-gl-hinge.o \
 		obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/root-joint/root-joint.o  \
 		obj/kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.o obj/geomatric-primitives/sphere.o obj/geomatric-primitives/cylinder.o \
