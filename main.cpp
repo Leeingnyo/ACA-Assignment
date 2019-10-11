@@ -1,4 +1,6 @@
-#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -25,13 +27,17 @@
 #include "kinematics/open-gl-hinge/open-gl-hinge.hpp"
 #include "kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.hpp"
 #include "kinematics/open-gl-link/open-gl-link.hpp"
+#include "kinematics/open-gl-euler-joint/open-gl-euler-joint.hpp"
+#include "kinematics/root-joint/root-joint.hpp"
 #include "kinematics/human/human.hpp"
+
+#include "kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp"
 
 #ifndef __WIN32
 #define __int64 long long
 #endif // __WIN32
 
-int main () {
+int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
     screen.setCurrentScreen();
@@ -66,7 +72,25 @@ int main () {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
-    OpenGLHuman human = OpenGLHuman();
+    if (argc <= 1) {
+        std::cout << "Please give bvh file path as the first argument" << std::endl;
+        return -1;
+    }
+    std::ifstream bvh_file(argv[1]);
+    std::string file_content;
+    if (bvh_file.is_open()) {
+        std::stringstream string_stream;
+        string_stream << bvh_file.rdbuf();
+        file_content = string_stream.str();
+        bvh_file.close();
+    } else {
+        std::cout << "Can't open the file" << std::endl;
+        return -2;
+    }
+    inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
+    auto bvh_tokens = parser.scan_from_string(file_content);
+    auto bvh = parser.parse_from_tokens(bvh_tokens);
+    auto root = bvh_to_kinematics(bvh);
 
     auto starttime = std::chrono::system_clock::now();
 
@@ -82,46 +106,7 @@ int main () {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            const float shoulder_angle = 30.f;
-            const float elbow_angle = 120.f;
-            human.right_shoulder_joint->direction = glm::vec3(-std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
-            human.right_shoulder_joint->front = glm::vec3(0, 0, 1);
-            human.right_elbow_joint->angle = elbow_angle;
-            human.left_shoulder_joint->direction = glm::vec3(std::cos(shoulder_angle * M_PI / 180), 0, std::sin(shoulder_angle * M_PI / 180));
-            human.left_shoulder_joint->front = glm::vec3(0, 0, 1);
-            human.left_elbow_joint->angle = elbow_angle;
-
-            const float one_cycle_per_second = delta_milli * 360 / 1000.f;
-            const float one_radian_per_second = one_cycle_per_second * M_PI / 180.f;
-            const float& x = one_radian_per_second;
-            const float sin_x = std::sin(x);
-            const float cos_x = std::cos(x);
-            const float cycle = std::sin(x / 2);
-            const float cycle_half = std::sin(x / 4);
-            human.backbone_joint->front = glm::vec3(std::sin(cycle * 120 * M_PI / 180),
-                    0, std::cos(cycle * 120 * M_PI / 180));
-            human.backbone_joint->direction  = glm::vec3(std::sin(cycle * 10 * M_PI / 180),
-                    std::cos(cycle * 10 * M_PI / 180), 0);
-
-            human.right_hip_joint->direction = glm::vec3(
-                    -std::sin(-std::max(-cycle * 30, 0.f) * M_PI / 180),
-                    -std::cos(std::max(-cycle * 120, 0.f) * M_PI / 180),
-                    std::sin(std::max(-cycle * 120, 0.f) * M_PI / 180));
-            human.right_hip_joint->front = glm::vec3(
-                    std::sin(std::max(-cycle * 30, 0.f) * M_PI / 180),
-                    std::sin(std::max(-cycle * 90, 0.f) * M_PI / 180),
-                    std::cos(std::max(-cycle * 90, 0.f) * M_PI / 180));
-            human.right_knee_joint->angle = std::max(-cycle * 150, 0.f);
-
-            human.left_hip_joint->direction = glm::vec3(
-                    std::sin(-std::max(cycle * 30, 0.f) * M_PI / 180),
-                    -std::cos(std::max(cycle * 120, 0.f) * M_PI / 180),
-                    std::sin(std::max(cycle * 120, 0.f) * M_PI / 180));
-            human.left_hip_joint->front = glm::vec3(
-                    -std::sin(std::max(cycle * 30, 0.f) * M_PI / 180),
-                    std::sin(std::max(cycle * 90, 0.f) * M_PI / 180),
-                    std::cos(std::max(cycle * 90, 0.f) * M_PI / 180));
-            human.left_knee_joint->angle = std::max(cycle * 150, 0.f);
+            root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
         { // projection
@@ -149,7 +134,7 @@ int main () {
             glLightfv(GL_LIGHT0, GL_POSITION, position);
             */
 
-            human.draw();
+            root->draw();
 
             glBegin(GL_LINES);
             glColor3f(1, 0, 0);

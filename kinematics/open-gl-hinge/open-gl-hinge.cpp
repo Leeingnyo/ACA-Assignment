@@ -14,7 +14,7 @@ void OpenGLHinge::draw() {
     OpenGLSphere sphere = OpenGLSphere(glm::vec3(0, 0, 0), 0.5f);
     sphere.draw();
 
-    if (link) {
+    for (const auto& link : links) {
         link->draw();
     }
 

@@ -48,6 +48,15 @@ make
 2. Press 'F9'
 3. Press 'Ctrl + F10'
 
+## How to Run
+
+before run, prepare an bvh file please
+
+```
+make
+./bin/AdvancedAnimationAssignment01 [bvh-file-path]
+```
+
 ## How to Use
 
 Drag the screen with your mouse to rotate the camera view.

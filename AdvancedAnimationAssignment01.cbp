@@ -40,6 +40,8 @@
 			<Add library="libgdi32.a" />
 			<Add directory="./lib" />
 		</Linker>
+		<Unit filename="bvh-parser/bvh-parser.cpp" />
+		<Unit filename="bvh-parser/bvh-parser.hpp" />
 		<Unit filename="camera/camera.h" />
 		<Unit filename="geomatric-primitives/common.cpp" />
 		<Unit filename="geomatric-primitives/common.hpp" />
@@ -50,7 +52,10 @@
 		<Unit filename="geomatric-primitives/sphere.cpp" />
 		<Unit filename="geomatric-primitives/sphere.hpp" />
 		<Unit filename="kinematics/ball-and-socket/ball-and-socket.hpp" />
+		<Unit filename="kinematics/bvh-to-kinematics/bvh-to-kinematics.cpp" />
+		<Unit filename="kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp" />
 		<Unit filename="kinematics/drawable.hpp" />
+		<Unit filename="kinematics/euler-joint/euler-joint.hpp" />
 		<Unit filename="kinematics/hinge/hinge.hpp" />
 		<Unit filename="kinematics/human/human.cpp" />
 		<Unit filename="kinematics/human/human.hpp" />
@@ -58,10 +63,14 @@
 		<Unit filename="kinematics/link/link.hpp" />
 		<Unit filename="kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.cpp" />
 		<Unit filename="kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.hpp" />
+		<Unit filename="kinematics/open-gl-euler-joint/open-gl-euler-joint.cpp" />
+		<Unit filename="kinematics/open-gl-euler-joint/open-gl-euler-joint.hpp" />
 		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.cpp" />
 		<Unit filename="kinematics/open-gl-hinge/open-gl-hinge.hpp" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.cpp" />
 		<Unit filename="kinematics/open-gl-link/open-gl-link.hpp" />
+		<Unit filename="kinematics/root-joint/root-joint.cpp" />
+		<Unit filename="kinematics/root-joint/root-joint.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />

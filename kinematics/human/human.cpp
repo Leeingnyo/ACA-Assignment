@@ -55,41 +55,41 @@ OpenGLHuman::OpenGLHuman() {
     hips->joints.push_back(std::static_pointer_cast<Joint>(left_hip_joint));
     hips->joints.push_back(std::static_pointer_cast<Joint>(sacrum_joint));
 
-    right_hip_joint->link = right_thigh_link;
+    right_hip_joint->links.push_back(right_thigh_link);
     right_thigh_link->joints.push_back(std::static_pointer_cast<Joint>(right_knee_joint));
-    right_knee_joint->link = right_calf_link;
+    right_knee_joint->links.push_back(right_calf_link);
     right_calf_link->joints.push_back(std::static_pointer_cast<Joint>(right_ankle_joint));
-    right_ankle_joint->link = right_foot_link;
+    right_ankle_joint->links.push_back(right_foot_link);
 
-    left_hip_joint->link = left_thigh_link;
+    left_hip_joint->links.push_back(left_thigh_link);
     left_thigh_link->joints.push_back(std::static_pointer_cast<Joint>(left_knee_joint));
-    left_knee_joint->link = left_calf_link;
+    left_knee_joint->links.push_back(left_calf_link);
     left_calf_link->joints.push_back(std::static_pointer_cast<Joint>(left_ankle_joint));
-    left_ankle_joint->link = left_foot_link;
+    left_ankle_joint->links.push_back(left_foot_link);
 
-    sacrum_joint->link = waist_link;
+    sacrum_joint->links.push_back(waist_link);
     waist_link->joints.push_back(std::static_pointer_cast<Joint>(backbone_joint));
-    backbone_joint->link = backbone_link;
+    backbone_joint->links.push_back(backbone_link);
 
     backbone_link->joints.push_back(std::static_pointer_cast<Joint>(right_shoulder_joint));
     backbone_link->joints.push_back(std::static_pointer_cast<Joint>(left_shoulder_joint));
     backbone_link->joints.push_back(std::static_pointer_cast<Joint>(neck_joint));
 
-    right_shoulder_joint->link = right_upper_arm_link;
+    right_shoulder_joint->links.push_back(right_upper_arm_link);
     right_upper_arm_link->joints.push_back(std::static_pointer_cast<Joint>(right_elbow_joint));
-    right_elbow_joint->link = right_lower_arm_link;
+    right_elbow_joint->links.push_back(right_lower_arm_link);
     right_lower_arm_link->joints.push_back(std::static_pointer_cast<Joint>(right_wrist_joint));
-    right_wrist_joint->link = right_hand_link;
+    right_wrist_joint->links.push_back(right_hand_link);
 
-    left_shoulder_joint->link = left_upper_arm_link;
+    left_shoulder_joint->links.push_back(left_upper_arm_link);
     left_upper_arm_link->joints.push_back(std::static_pointer_cast<Joint>(left_elbow_joint));
-    left_elbow_joint->link = left_lower_arm_link;
+    left_elbow_joint->links.push_back(left_lower_arm_link);
     left_lower_arm_link->joints.push_back(std::static_pointer_cast<Joint>(left_wrist_joint));
-    left_wrist_joint->link = left_hand_link;
+    left_wrist_joint->links.push_back(left_hand_link);
 
-    neck_joint->link = neck_link;
+    neck_joint->links.push_back(neck_link);
     neck_link->joints.push_back(std::static_pointer_cast<Joint>(head_joint));
-    head_joint->link = head_link;
+    head_joint->links.push_back(head_link);
 }
 
 void OpenGLHuman::draw() {
