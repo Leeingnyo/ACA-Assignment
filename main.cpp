@@ -33,6 +33,8 @@
 
 #include "kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp"
 
+#include "inverse-kinematics/inverse-kinematics.h"
+
 #ifndef __WIN32
 #define __int64 long long
 #endif // __WIN32
@@ -72,11 +74,15 @@ int main (int argc, char* argv[]) {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
+    /*
     if (argc <= 1) {
         std::cout << "Please give bvh file path as the first argument" << std::endl;
         return -1;
     }
     std::ifstream bvh_file(argv[1]);
+    */
+    /*
+    std::ifstream bvh_file("Trial001.bvh");
     std::string file_content;
     if (bvh_file.is_open()) {
         std::stringstream string_stream;
@@ -91,8 +97,96 @@ int main (int argc, char* argv[]) {
     auto bvh_tokens = parser.scan_from_string(file_content);
     auto bvh = parser.parse_from_tokens(bvh_tokens);
     auto root = bvh_to_kinematics(bvh);
+    */
 
     auto starttime = std::chrono::system_clock::now();
+
+    std::vector<EulerJointChannel> channels{
+        EulerJointChannel::X_R,
+        EulerJointChannel::Y_R,
+        EulerJointChannel::Z_R
+    };
+
+    auto root = std::make_shared<OpenGLEulerJoint>(channels);
+    auto link1 = std::make_shared<OpenGLLink>(glm::vec3(3, 0, 0));
+    auto joint1 = std::make_shared<OpenGLEulerJoint>(channels);
+    auto link2 = std::make_shared<OpenGLLink>(glm::vec3(3, 3, 0));
+    auto joint2 = std::make_shared<OpenGLEulerJoint>(channels);
+    auto link3 = std::make_shared<OpenGLLink>(glm::vec3(-3, 3, 0));
+
+    std::vector<float> channel_values{ 0.f, 0.f, 0.f };
+
+    root->links.push_back(link1);
+    root->channel_values = channel_values;
+    link1->joints.push_back(joint1);
+    joint1->links.push_back(link2);
+    joint1->channel_values = channel_values;
+    link2->joints.push_back(joint2);
+    joint2->links.push_back(link3);
+    joint2->channel_values = channel_values;
+
+    auto&& joints = find_path(root, link3);
+    std::cout << joints.size() << std::endl;
+
+    auto mat_vec = std::vector<Eigen::Matrix4d>();
+    for (int i = 0; i < joints.size(); i++) {
+        const auto& joint_pair = joints[i];
+        const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint_pair.first);
+        const auto& link = euler_joint->links[joint_pair.second];
+        Eigen::Matrix4d r = Eigen::Matrix4d::Identity();
+        for (int i = 0; i < euler_joint->channels.size(); i++) {
+            Eigen::Matrix4d channel_mat = Eigen::Matrix4d::Identity();
+            const double value = euler_joint->channel_values[i];
+            const double radian_value = value * M_PI / 180.;
+            const auto& channel = euler_joint->channels[i];
+            int pos;
+            switch (channel) {
+                default: continue;
+                case EulerJointChannel::X_R: pos = 1; break;
+                case EulerJointChannel::Y_R: pos = 2; break;
+                case EulerJointChannel::Z_R: pos = 0; break;
+            }
+            int ppos = (pos + 1) % 3; // 앞의 것
+            channel_mat(pos, pos) = channel_mat(ppos, ppos) = std::cos(radian_value);
+            channel_mat(pos, ppos) = -1 * (channel_mat(ppos, pos) = std::sin(radian_value));
+            r = r * channel_mat;
+        }
+        Eigen::Matrix4d t;
+        t << 1, 0, 0, link->direction.x,
+             0, 1, 0, link->direction.y,
+             0, 0, 1, link->direction.z,
+             0, 0, 0, 1;
+        mat_vec.push_back((i == 0 ? Eigen::Matrix4d::Identity() : mat_vec[i - 1]) * r * t);
+    }
+    auto root_point = Eigen::Vector3d{0, 0, 0};
+    auto points = std::vector<Eigen::Vector3d>();
+    points.push_back(root_point);
+    for (const auto& mat : mat_vec) {
+        Eigen::Vector4d calculated = mat * Eigen::Vector4d{0, 0, 0, 1};
+        Eigen::Vector3d point3d;
+        for (int i = 0; i < 3; i++) point3d(i) = calculated(i);
+        points.push_back(point3d);
+    }
+    auto end_effector_point = points.back();
+    points.pop_back();
+    Eigen::MatrixXd Jacobian;
+    Jacobian.resize(2, points.size() * 1); // TODO 2 -> ?
+    const auto z_axis = Eigen::Vector3d{0, 0, 1};
+    for (int j = 0; j < points.size() * 1; j++) { // TODO 죄다 바꿔야 함
+        const auto& point = points[j];
+        const auto cross = z_axis.cross(end_effector_point - point);
+        for (int i = 0; i < 2; i++) {
+            Jacobian(i, j) = cross(i);
+        }
+    }
+    Eigen::Vector2d delta = Eigen::Vector2d{0.6, -0.6}; // to - from / N
+    Eigen::Vector3d result = MoorePenrosePseudoinverse(Jacobian) * delta;
+    std::cout << result;
+    root->channel_values[2] += result(0, 0) * 10;
+    joint1->channel_values[2] += result(1, 0) * 10;
+    joint2->channel_values[2] += result(2, 0) * 10;
+
+    // 계산 할 것
 
     while (!glfwWindowShouldClose(window)) {
         // Render here
@@ -106,7 +200,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
+            // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
         { // projection
