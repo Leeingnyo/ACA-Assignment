@@ -77,13 +77,18 @@ move(to root end-effector )
         자코비언을 구하고 연산해서 더한다
 */
 
+Eigen::Vector3d vector4to3(const Eigen::Vector4d& vec) {
+    return Eigen::Vector3d{vec(0), vec(1), vec(2)};
+}
+
 void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::shared_ptr<Link>& end_effector) {
-    //for (int k = 0; k < 20; k++) {
+//    for (int k = 0; k < 10; k++) {
         auto&& joints = find_path(root, end_effector);
-        auto mat_vec = std::vector<Eigen::Matrix4d>();
+        if (joints.size() == 0) return;
         #ifdef DEBUG
         DEBUG("path found");
         #endif // DEBUG
+        auto rotation_and_translation_mat_of_joints = std::vector<std::pair<Eigen::Matrix4d, Eigen::Matrix4d>>();
         for (int i = 0; i < joints.size(); i++) {
             const auto& joint_pair = joints[i];
             const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint_pair.first);
@@ -111,15 +116,24 @@ void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::share
                  0, 1, 0, link->direction.y,
                  0, 0, 1, link->direction.z,
                  0, 0, 0, 1;
-            mat_vec.push_back((i == 0 ? Eigen::Matrix4d::Identity() : mat_vec[i - 1]) * r * t);
+            rotation_and_translation_mat_of_joints.push_back(std::make_pair(r, t));
         }
         #ifdef DEBUG
         DEBUG("matrix calculated");
         #endif // DEBUG
+        auto translation_mat_vec = std::vector<Eigen::Matrix4d>();
+        auto rotation_mat_vec = std::vector<Eigen::Matrix4d>();
+        for (int i = 0; i < rotation_and_translation_mat_of_joints.size(); i++) {
+            const auto& r_t_pair = rotation_and_translation_mat_of_joints[i];
+            const auto& rotation_mat = r_t_pair.first;
+            const auto& translation_mat = r_t_pair.second;
+            rotation_mat_vec.push_back((i == 0 ? Eigen::Matrix4d::Identity() : rotation_mat_vec[i - 1]) * rotation_mat);
+            translation_mat_vec.push_back((i == 0 ? Eigen::Matrix4d::Identity() : translation_mat_vec[i - 1]) * rotation_mat * translation_mat);
+        }
         auto root_point = Eigen::Vector3d{0, 0, 0};
         auto points = std::vector<Eigen::Vector3d>();
         points.push_back(root_point);
-        for (const auto& mat : mat_vec) {
+        for (const auto& mat : translation_mat_vec) {
             Eigen::Vector4d calculated = mat * Eigen::Vector4d{0, 0, 0, 1};
             Eigen::Vector3d point3d;
             for (int i = 0; i < 3; i++) point3d(i) = calculated(i);
@@ -131,36 +145,52 @@ void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::share
         DEBUG("points calculated");
         #endif // DEBUG
 
-        const auto hello = to - end_effector_point;
-        if (hello.norm() < 0.1) {
-            //      break;
+        const auto difference = to - end_effector_point;
+        if (difference.norm() < 0.1) {
             return;
         }
 
         Eigen::MatrixXd Jacobian;
-        Jacobian.resize(2, points.size() * 1); // TODO 2 -> ?
-        const auto z_axis = Eigen::Vector3d{0, 0, 1};
-        for (int j = 0; j < points.size() * 1; j++) { // TODO 죄다 바꿔야 함
+        const int N = 3;
+        const double STEP = 0.6;
+        Jacobian.resize(N, points.size() * 3);
+        const auto x_axis = Eigen::Vector4d{1, 0, 0, 1};
+        const auto y_axis = Eigen::Vector4d{0, 1, 0, 1};
+        const auto z_axis = Eigen::Vector4d{0, 0, 1, 1};
+        auto select_axis = [&x_axis, &y_axis, &z_axis](int i) {
+            int ii = (i % 3);
+            if (ii == 0) return x_axis;
+            else if (ii == 1) return y_axis;
+            else return z_axis;
+        };
+        for (int j = 0; j < points.size(); j++) { // TODO 죄다 바꿔야 함
             const auto& point = points[j];
-            const auto cross = z_axis.cross(end_effector_point - point);
-            for (int i = 0; i < 2; i++) {
-                Jacobian(i, j) = cross(i);
+            for (int xyz = 0; xyz < 3; xyz++) {
+                const auto cross = vector4to3(rotation_mat_vec[j] * select_axis(xyz)).cross(end_effector_point - point);
+                for (int i = 0; i < N; i++) {
+                    Jacobian(i, j * 3 + xyz) = cross(i);
+                }
             }
         }
         #ifdef DEBUG
         DEBUG("jacobian calculated");
         #endif // DEBUG
-        Eigen::Vector2d delta; // to - from / N
-        Eigen::Vector3d delta3d = (to - end_effector_point).normalized() * 0.6;
-        delta(0) = delta3d(0);
-        delta(1) = delta3d(1);
-        Eigen::VectorXd result = MoorePenrosePseudoinverse(Jacobian) * delta;
+        Eigen::VectorXd delta;
+        delta.resize(N);
+        Eigen::Vector3d delta3d = (to - end_effector_point).normalized() * STEP;
+        for (int i = 0; i < N && i < 3; i++) {
+            delta(i) = delta3d(i);
+        }
+        Eigen::VectorXd result = Jacobian.colPivHouseholderQr().solve(delta); // MoorePenrosePseudoinverse(Jacobian) * delta;
+        std::cout << result.transpose() << std::endl;
 
         for (int i = 0; i < joints.size(); i++) {
             const auto& joint_pair = joints[i];
             const auto& joint = joint_pair.first;
             const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
-            euler_joint->channel_values[2] += result(i, 0);
+            euler_joint->channel_values[0] += result(i * 3 + 0); // x
+            euler_joint->channel_values[1] += result(i * 3 + 1); // y
+            euler_joint->channel_values[2] += result(i * 3 + 2); // z
         }
         #ifdef DEBUG
         DEBUG("apply delta");

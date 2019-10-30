@@ -110,7 +110,7 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<Joint> root = std::make_shared<OpenGLEulerJoint>(channels);
     std::shared_ptr<Link> link1 = std::make_shared<OpenGLLink>(glm::vec3(3, 0, 0));
     auto joint1 = std::make_shared<OpenGLEulerJoint>(channels);
-    std::shared_ptr<Link> link2 = std::make_shared<OpenGLLink>(glm::vec3(3, 3, 0));
+    std::shared_ptr<Link> link2 = std::make_shared<OpenGLLink>(glm::vec3(2, 2, -2));
     auto joint2 = std::make_shared<OpenGLEulerJoint>(channels);
     std::shared_ptr<Link> link3 = std::make_shared<OpenGLLink>(glm::vec3(-3, 3, 0));
 
@@ -140,9 +140,8 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
             ik_move(to, root, link3);
-            ik_move(to2, root, link1);
+            // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
         { // projection
