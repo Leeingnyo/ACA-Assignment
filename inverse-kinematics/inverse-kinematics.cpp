@@ -3,8 +3,9 @@
 #include <vector>
 #include <cmath>
 
-#include "inverse-kinematics.h"
+#include "../Eigen/Geometry"
 
+#include "inverse-kinematics.h"
 #include "../kinematics/euler-joint/euler-joint.hpp"
 
 #define D 0.0000001
@@ -81,8 +82,20 @@ Eigen::Vector3d vector4to3(const Eigen::Vector4d& vec) {
     return Eigen::Vector3d{vec(0), vec(1), vec(2)};
 }
 
-void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::shared_ptr<Link>& end_effector) {
-//    for (int k = 0; k < 10; k++) {
+Eigen::Matrix3d matrix4to3(const Eigen::Matrix4d& mat) {
+    Eigen::Matrix3d mat3;
+    mat3 << mat(0, 0), mat(0, 1), mat(0, 2),
+            mat(1, 0), mat(1, 1), mat(1, 2),
+            mat(2, 0), mat(2, 1), mat(2, 2);
+    return mat3;
+}
+
+void ik_move(
+        const Eigen::Vector3d& destination,
+        const Eigen::Quaterniond& toward,
+        std::shared_ptr<Joint>& root,
+        std::shared_ptr<Link>& end_effector) {
+    for (int k = 0; k < 10; k++) {
         auto&& joints = find_path(root, end_effector);
         if (joints.size() == 0) return;
         #ifdef DEBUG
@@ -145,10 +158,14 @@ void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::share
         DEBUG("points calculated");
         #endif // DEBUG
 
-        const auto difference = to - end_effector_point;
+        const auto difference = destination - end_effector_point;
         if (difference.norm() < 0.1) {
             return;
         }
+        auto end_effector_quaternion = Eigen::Quaterniond(matrix4to3(rotation_mat_vec.back()));
+        auto b = Eigen::AngleAxisd(toward.inverse() * end_effector_quaternion);
+        std::cout << "axis " << b.axis().transpose() << std::endl;
+        std::cout << "angle " << b.angle() << std::endl;
 
         Eigen::MatrixXd Jacobian;
         const int N = 3;
@@ -177,12 +194,11 @@ void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::share
         #endif // DEBUG
         Eigen::VectorXd delta;
         delta.resize(N);
-        Eigen::Vector3d delta3d = (to - end_effector_point).normalized() * STEP;
+        Eigen::Vector3d delta3d = difference.normalized() * STEP;
         for (int i = 0; i < N && i < 3; i++) {
             delta(i) = delta3d(i);
         }
         Eigen::VectorXd result = Jacobian.colPivHouseholderQr().solve(delta); // MoorePenrosePseudoinverse(Jacobian) * delta;
-        std::cout << result.transpose() << std::endl;
 
         for (int i = 0; i < joints.size(); i++) {
             const auto& joint_pair = joints[i];
@@ -195,5 +211,5 @@ void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::share
         #ifdef DEBUG
         DEBUG("apply delta");
         #endif // DEBUG
-//    }
+    }
 }

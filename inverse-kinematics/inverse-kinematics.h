@@ -7,7 +7,8 @@
 #include "../kinematics/link/link.hpp"
 
 Eigen::MatrixXd MoorePenrosePseudoinverse(Eigen::MatrixXd mat);
-void ik_move(const Eigen::Vector3d& to, std::shared_ptr<Joint>& root, std::shared_ptr<Link>& end_effector);
+void ik_move(const Eigen::Vector3d& destination, const Eigen::Quaterniond& toward,
+        std::shared_ptr<Joint>& root, std::shared_ptr<Link>& end_effector);
 
 /*
 
