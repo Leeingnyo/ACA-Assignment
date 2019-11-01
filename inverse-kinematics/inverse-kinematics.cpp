@@ -154,23 +154,29 @@ void ik_move(
         }
         auto end_effector_point = points.back();
         points.pop_back();
+        auto orientations = std::vector<Eigen::Quaterniond>();
+        for (const auto& mat : rotation_mat_vec) {
+            Eigen::Quaterniond orientation = Eigen::Quaterniond(matrix4to3(mat));
+            orientations.push_back(orientation);
+        }
+        auto end_effector_orientation = orientations.back();
         #ifdef DEBUG
         DEBUG("points calculated");
         #endif // DEBUG
 
         const auto difference = destination - end_effector_point;
-        if (difference.norm() < 0.1) {
+        auto difference_orientation = Eigen::AngleAxisd(end_effector_orientation.inverse() * toward);
+        if (difference.norm() < 0.1 && std::cos(difference_orientation.angle() > 0.99)) {
             return;
         }
-        auto end_effector_quaternion = Eigen::Quaterniond(matrix4to3(rotation_mat_vec.back()));
-        auto b = Eigen::AngleAxisd(toward.inverse() * end_effector_quaternion);
-        std::cout << "axis " << b.axis().transpose() << std::endl;
-        std::cout << "angle " << b.angle() << std::endl;
+        std::cout << "axis " << difference_orientation.axis().transpose() << std::endl;
+        std::cout << "angle " << difference_orientation.angle() << std::endl;
 
         Eigen::MatrixXd Jacobian;
         const int N = 3;
+        const int A = 3;
         const double STEP = 0.6;
-        Jacobian.resize(N, points.size() * 3);
+        Jacobian.resize(N + A, points.size() * 3);
         const auto x_axis = Eigen::Vector4d{1, 0, 0, 1};
         const auto y_axis = Eigen::Vector4d{0, 1, 0, 1};
         const auto z_axis = Eigen::Vector4d{0, 0, 1, 1};
@@ -183,9 +189,13 @@ void ik_move(
         for (int j = 0; j < points.size(); j++) { // TODO 죄다 바꿔야 함
             const auto& point = points[j];
             for (int xyz = 0; xyz < 3; xyz++) {
-                const auto cross = vector4to3(rotation_mat_vec[j] * select_axis(xyz)).cross(end_effector_point - point);
+                const auto angular_velocity = vector4to3(rotation_mat_vec[j] * select_axis(xyz));
+                const auto cross = angular_velocity.cross(end_effector_point - point);
                 for (int i = 0; i < N; i++) {
                     Jacobian(i, j * 3 + xyz) = cross(i);
+                }
+                for (int i = N; i < N + A; i++) {
+                    Jacobian(i, j * 3 + xyz) = angular_velocity(i - N);
                 }
             }
         }
@@ -193,10 +203,14 @@ void ik_move(
         DEBUG("jacobian calculated");
         #endif // DEBUG
         Eigen::VectorXd delta;
-        delta.resize(N);
+        delta.resize(N + A);
         Eigen::Vector3d delta3d = difference.normalized() * STEP;
         for (int i = 0; i < N && i < 3; i++) {
             delta(i) = delta3d(i);
+        }
+        Eigen::Vector3d w = difference_orientation.axis() * difference_orientation.angle() * STEP;
+        for (int i = N; i < N + A; i++) {
+            delta(i) = w(i - N); // w 넣어야 함
         }
         Eigen::VectorXd result = Jacobian.colPivHouseholderQr().solve(delta); // MoorePenrosePseudoinverse(Jacobian) * delta;
 

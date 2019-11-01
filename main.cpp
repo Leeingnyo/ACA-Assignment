@@ -125,8 +125,9 @@ int main (int argc, char* argv[]) {
     joint2->links.push_back(link3);
     joint2->channel_values = channel_values;
 
-    auto destination = Eigen::Vector3d{9, 0, 0};
-    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI, Eigen::Vector3d(1, 0, 0)));
+    auto destination = Eigen::Vector3d{2.12132, 2.12132, 0};
+    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
+            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
 
     while (!glfwWindowShouldClose(window)) {
@@ -141,7 +142,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            ik_move(destination, toward, root, link3);
+            ik_move(destination, toward, root, link1);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
@@ -185,6 +186,29 @@ int main (int argc, char* argv[]) {
             glVertex3f(0, 0, -10);
             glVertex3f(0, 0, 10); // z
             glEnd();
+
+            glPushMatrix();
+            glTranslated(destination(0), destination(1), destination(2));
+            glRotated(Eigen::AngleAxisd(toward).angle() / M_PI * 180,
+                    Eigen::AngleAxisd(toward).axis()(0),
+                    Eigen::AngleAxisd(toward).axis()(1),
+                    Eigen::AngleAxisd(toward).axis()(2));
+
+            glBegin(GL_LINES);
+            glColor3f(1, 0, 1);
+            glVertex3f(0, 0, 0);
+            glVertex3f(1, 0, 0); // x
+
+            glColor3f(1, 1, 0);
+            glVertex3f(0, 0, 0);
+            glVertex3f(0, 1, 0); // y
+
+            glColor3f(0, 1, 1);
+            glVertex3f(0, 0, 0);
+            glVertex3f(0, 0, 1); // z
+            glEnd();
+
+            glPopMatrix();
 
             glPushMatrix();
             { // display object independently of camera
