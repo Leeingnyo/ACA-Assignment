@@ -125,7 +125,7 @@ int main (int argc, char* argv[]) {
     joint2->links.push_back(link3);
     joint2->channel_values = channel_values;
 
-    auto destination = Eigen::Vector3d{2.12132, 2.12132, 0};
+    auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
     auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
             Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
@@ -142,7 +142,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            ik_move(destination, toward, root, link1);
+            ik_move(destination, toward, root, link2);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
