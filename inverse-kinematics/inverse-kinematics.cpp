@@ -166,7 +166,7 @@ void ik_move(
 
         const auto difference = destination - end_effector_point;
         auto difference_orientation = Eigen::AngleAxisd(end_effector_orientation.inverse() * toward);
-        if (difference.norm() < 0.1 && std::cos(difference_orientation.angle() > 0.99)) {
+        if (difference.norm() < 0.1 && std::cos(difference_orientation.angle()) > 0.99) {
             return;
         }
         std::cout << "axis " << difference_orientation.axis().transpose() << std::endl;
