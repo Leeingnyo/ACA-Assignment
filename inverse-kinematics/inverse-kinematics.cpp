@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <cmath>
 
@@ -11,6 +12,10 @@
 #define D 0.0000001
 
 // #define DEBUG(STR) (std::cout << "DEBUG: " << STR << std::endl)
+// #define DDEBUG
+#define LABEL(STR) std::left << std::setw(10) << (STR)
+
+#define ENABLE_A true
 
 Eigen::MatrixXd MoorePenrosePseudoinverse(Eigen::MatrixXd mat) {
     auto mt = mat.transpose();
@@ -95,7 +100,11 @@ void ik_move(
         const Eigen::Quaterniond& toward,
         std::shared_ptr<Joint>& root,
         std::shared_ptr<Link>& end_effector) {
-    for (int k = 0; k < 10; k++) {
+    static bool is_singular = false;
+    // for (int k = 0; k < 10; k++) {
+    unsigned long long steps = 0;
+    while (true) {
+        steps++;
         auto&& joints = find_path(root, end_effector);
         if (joints.size() == 0) return;
         #ifdef DEBUG
@@ -167,16 +176,17 @@ void ik_move(
         const auto difference = destination - end_effector_point;
         auto difference_orientation = Eigen::AngleAxisd(end_effector_orientation.inverse() * toward);
         if (difference.norm() < 0.1 && std::cos(difference_orientation.angle()) > 0.99) {
+            if (steps != 1L) {
+                std::cout << LABEL("steps") << steps << std::endl;
+            }
             return;
         }
-        std::cout << "axis " << difference_orientation.axis().transpose() << std::endl;
-        std::cout << "angle " << difference_orientation.angle() << std::endl;
 
         Eigen::MatrixXd Jacobian;
         const int N = 3;
         const int A = 3;
         const double STEP = 0.6;
-        Jacobian.resize(N + A, points.size() * 3);
+        Jacobian.resize(N + (ENABLE_A ? A : 0), points.size() * 3);
         const auto x_axis = Eigen::Vector4d{1, 0, 0, 1};
         const auto y_axis = Eigen::Vector4d{0, 1, 0, 1};
         const auto z_axis = Eigen::Vector4d{0, 0, 1, 1};
@@ -194,25 +204,55 @@ void ik_move(
                 for (int i = 0; i < N; i++) {
                     Jacobian(i, j * 3 + xyz) = cross(i);
                 }
+                #ifdef DDEBUG
+                std::cout << xyz << " " << angular_velocity.transpose() << std::endl;
+                #endif
+                if (ENABLE_A)
                 for (int i = N; i < N + A; i++) {
                     Jacobian(i, j * 3 + xyz) = angular_velocity(i - N);
                 }
             }
         }
+        #ifdef DDEBUG
+        std::cout << Jacobian << std::endl << std::endl;
+        #endif
         #ifdef DEBUG
         DEBUG("jacobian calculated");
         #endif // DEBUG
         Eigen::VectorXd delta;
-        delta.resize(N + A);
-        Eigen::Vector3d delta3d = difference.normalized() * STEP;
+        delta.resize(N + (ENABLE_A ? A : 0));
+        Eigen::Vector3d delta3d = difference * STEP;
+        #ifdef DDEBUG
+        std::cout << LABEL("delta") << difference.transpose() << std::endl;
+        #endif
         for (int i = 0; i < N && i < 3; i++) {
             delta(i) = delta3d(i);
         }
         Eigen::Vector3d w = difference_orientation.axis() * difference_orientation.angle() * STEP;
+        #ifdef DDEBUG
+        std::cout << LABEL("axis") << difference_orientation.axis().transpose() << std::endl;
+        std::cout << LABEL("angle") << difference_orientation.angle() << std::endl;
+        std::cout << LABEL("w") << w.transpose() << std::endl;
+        #endif
+        if (ENABLE_A)
         for (int i = N; i < N + A; i++) {
             delta(i) = w(i - N); // w 넣어야 함
         }
-        Eigen::VectorXd result = Jacobian.colPivHouseholderQr().solve(delta); // MoorePenrosePseudoinverse(Jacobian) * delta;
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(Jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        Eigen::VectorXd result = svd.solve(delta);
+        #ifdef DDEBUG
+        std::cout << LABEL("result") << result.transpose() << std::endl << std::endl;
+        #endif
+        is_singular = true;
+        for (int i = 0; i < result.size(); i++) {
+            if (result(i) > 1e-4) is_singular = false;
+        }
+        if (is_singular) {
+            // std::cout << "----------------------------------------------------------------" << std::endl;
+            for (int i = 0; i < result.size(); i++) {
+                result(i) += D;
+            }
+        }
 
         for (int i = 0; i < joints.size(); i++) {
             const auto& joint_pair = joints[i];
