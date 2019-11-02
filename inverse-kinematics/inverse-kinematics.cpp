@@ -258,9 +258,18 @@ void ik_move(
             const auto& joint_pair = joints[i];
             const auto& joint = joint_pair.first;
             const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
-            euler_joint->channel_values[0] += result(i * 3 + 0); // x
-            euler_joint->channel_values[1] += result(i * 3 + 1); // y
-            euler_joint->channel_values[2] += result(i * 3 + 2); // z
+            auto find_index = [](const std::shared_ptr<EulerJoint>& joint, EulerJointChannel channel) {
+                for (int i = 0; i < joint->channels.size(); i++) {
+                    if (joint->channels[i] == channel) return i;
+                }
+                return -1;
+            };
+            int x_index = find_index(euler_joint, EulerJointChannel::X_R);
+            if (x_index >= 0) euler_joint->channel_values[x_index] += result(i * 3 + 0); // x
+            int y_index = find_index(euler_joint, EulerJointChannel::Y_R);
+            if (y_index >= 0) euler_joint->channel_values[y_index] += result(i * 3 + 1); // y
+            int z_index = find_index(euler_joint, EulerJointChannel::Z_R);
+            if (z_index >= 0) euler_joint->channel_values[z_index] += result(i * 3 + 2); // z
         }
         #ifdef DEBUG
         DEBUG("apply delta");
