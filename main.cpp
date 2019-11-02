@@ -153,16 +153,16 @@ int main (int argc, char* argv[]) {
     auto starttime = std::chrono::system_clock::now();
 
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
-    auto destination = Eigen::Vector3d{1.1446, -3, 3};
-    auto toward = // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
-            // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
-            Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
+    auto destination = Eigen::Vector3d{1.1446, -9, 2};
+    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
+            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
+            // Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
 
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
-                               Screen::current_screen->getHeightPointer());
+                Screen::current_screen->getHeightPointer());
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -179,7 +179,7 @@ int main (int argc, char* argv[]) {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             gluPerspective(Screen::current_screen->getCamera().getFov(),
-                           Screen::current_screen->getAspect(), 0.1f, 100.0f);
+                    Screen::current_screen->getAspect(), 0.1f, 100.0f);
 
             const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
             const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
