@@ -81,7 +81,6 @@ int main (int argc, char* argv[]) {
     }
     std::ifstream bvh_file(argv[1]);
     */
-    /*
     std::ifstream bvh_file("Trial001.bvh");
     std::string file_content;
     if (bvh_file.is_open()) {
@@ -96,34 +95,17 @@ int main (int argc, char* argv[]) {
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
     auto bvh_tokens = parser.scan_from_string(file_content);
     auto bvh = parser.parse_from_tokens(bvh_tokens);
-    auto root = bvh_to_kinematics(bvh);
-    */
+    std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
+
+    std::shared_ptr<OpenGLEulerJoint> root = std::make_shared<OpenGLEulerJoint>();
+    root->channel_values = bvh_kinematics->channel_values;
+    root->channels = bvh_kinematics->channels;
+    root->links = bvh_kinematics->links;
+    root->related_position = bvh_kinematics->related_position;
 
     auto starttime = std::chrono::system_clock::now();
 
-    std::vector<EulerJointChannel> channels{
-        EulerJointChannel::X_R,
-        EulerJointChannel::Y_R,
-        EulerJointChannel::Z_R
-    };
-
-    std::shared_ptr<Joint> root = std::make_shared<OpenGLEulerJoint>(channels);
-    std::shared_ptr<Link> link1 = std::make_shared<OpenGLLink>(glm::vec3(3, 0, 0));
-    auto joint1 = std::make_shared<OpenGLEulerJoint>(channels);
-    std::shared_ptr<Link> link2 = std::make_shared<OpenGLLink>(glm::vec3(3, 0, 0));
-    auto joint2 = std::make_shared<OpenGLEulerJoint>(channels);
-    std::shared_ptr<Link> link3 = std::make_shared<OpenGLLink>(glm::vec3(5, 0, 0));
-
     std::vector<float> channel_values{ 0.f, 0.f, 0.f };
-
-    root->links.push_back(link1);
-    std::dynamic_pointer_cast<OpenGLEulerJoint>(root)->channel_values = channel_values;
-    link1->joints.push_back(joint1);
-    joint1->links.push_back(link2);
-    joint1->channel_values = channel_values;
-    link2->joints.push_back(joint2);
-    joint2->links.push_back(link3);
-    joint2->channel_values = channel_values;
 
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
     auto destination = Eigen::Vector3d{4, 2, -1};
@@ -143,7 +125,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            ik_move(destination, toward, root, link3);
+            // ik_move(destination, toward, root, link3);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
