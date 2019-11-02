@@ -98,8 +98,8 @@ Eigen::Matrix3d matrix4to3(const Eigen::Matrix4d& mat) {
 void ik_move(
         const Eigen::Vector3d& destination,
         const Eigen::Quaterniond& toward,
-        std::shared_ptr<Joint>& root,
-        std::shared_ptr<Link>& end_effector) {
+        const std::shared_ptr<Joint>& root,
+        const std::shared_ptr<Link>& end_effector) {
     static bool is_singular = false;
     // for (int k = 0; k < 10; k++) {
     unsigned long long steps = 0;

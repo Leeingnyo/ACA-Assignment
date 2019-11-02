@@ -8,7 +8,7 @@
 
 Eigen::MatrixXd MoorePenrosePseudoinverse(Eigen::MatrixXd mat);
 void ik_move(const Eigen::Vector3d& destination, const Eigen::Quaterniond& toward,
-        std::shared_ptr<Joint>& root, std::shared_ptr<Link>& end_effector);
+        const std::shared_ptr<Joint>& root, const std::shared_ptr<Link>& end_effector);
 
 /*
 
