@@ -28,6 +28,7 @@ std::shared_ptr<Link> bvh_to_euler_joint(const std::shared_ptr<inyong_bvh::BvhJo
     auto euler_joint = std::make_shared<OpenGLEulerJoint>();
     for (int i = 0; i < bvh_joint->channels.size(); i++) {
         euler_joint->channels.push_back(transfrom_channel_type(bvh_joint->channels[i]));
+        euler_joint->channel_values.push_back(0.f);
         number_of_channels++;
     }
     link->joints.push_back(euler_joint);
@@ -45,6 +46,7 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
     std::shared_ptr<RootJoint> root_joint = std::make_shared<RootJoint>();
     for (int i = 0; i < bvh->hierarchy->root->channels.size(); i++) {
         root_joint->channels.push_back(transfrom_channel_type(bvh->hierarchy->root->channels[i]));
+        root_joint->channel_values.push_back(0.f);
         number_of_channels++;
     }
 
