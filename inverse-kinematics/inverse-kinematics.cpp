@@ -250,7 +250,7 @@ void ik_move(
         if (is_singular) {
             // std::cout << "----------------------------------------------------------------" << std::endl;
             for (int i = 0; i < result.size(); i++) {
-                result(i) += D;
+                result(i) += 5;
             }
         }
 

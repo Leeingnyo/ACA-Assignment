@@ -114,7 +114,7 @@ int main (int argc, char* argv[]) {
     auto joint2 = std::make_shared<OpenGLEulerJoint>(channels);
     std::shared_ptr<Link> link3 = std::make_shared<OpenGLLink>(glm::vec3(5, 0, 0));
 
-    std::vector<float> channel_values{ 0.f, 0.f, 5.f };
+    std::vector<float> channel_values{ 0.f, 0.f, 0.f };
 
     root->links.push_back(link1);
     std::dynamic_pointer_cast<OpenGLEulerJoint>(root)->channel_values = channel_values;
@@ -126,10 +126,9 @@ int main (int argc, char* argv[]) {
     joint2->channel_values = channel_values;
 
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
-    auto destination = Eigen::Vector3d{9, 0, 0};
-    auto toward = // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
-            // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
-            Eigen::Quaterniond(Eigen::AngleAxisd(- M_PI, Eigen::Vector3d(1, 0, 0)));
+    auto destination = Eigen::Vector3d{4, 2, -1};
+    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
+            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
 
     while (!glfwWindowShouldClose(window)) {
