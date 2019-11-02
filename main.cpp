@@ -103,14 +103,16 @@ int main (int argc, char* argv[]) {
     root->links = bvh_kinematics->links;
     root->related_position = bvh_kinematics->related_position;
 
+    auto lfemur = root->links[0]->joints[0];
+    auto ltoes = root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0];
+
     auto starttime = std::chrono::system_clock::now();
 
-    std::vector<float> channel_values{ 0.f, 0.f, 0.f };
-
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
-    auto destination = Eigen::Vector3d{4, 2, -1};
-    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
-            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
+    auto destination = Eigen::Vector3d{1.1446, -3, 3};
+    auto toward = // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
+            // Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
+            Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
 
     while (!glfwWindowShouldClose(window)) {
@@ -125,7 +127,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            // ik_move(destination, toward, root, link3);
+            ik_move(destination, toward, root, ltoes);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
@@ -170,6 +172,7 @@ int main (int argc, char* argv[]) {
             glVertex3f(0, 0, 10); // z
             glEnd();
 
+            /*
             glPushMatrix();
             glTranslated(destination(0), destination(1), destination(2));
             glRotated(Eigen::AngleAxisd(toward).angle() / M_PI * 180,
@@ -192,6 +195,7 @@ int main (int argc, char* argv[]) {
             glEnd();
 
             glPopMatrix();
+            */
 
             glPushMatrix();
             { // display object independently of camera
