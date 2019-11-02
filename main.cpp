@@ -103,8 +103,52 @@ int main (int argc, char* argv[]) {
     root->links = bvh_kinematics->links;
     root->related_position = bvh_kinematics->related_position;
 
-    auto lfemur = root->links[0]->joints[0];
-    auto ltoes = root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0];
+    // TODO 인간클래스로 빼기?
+    std::shared_ptr<OpenGLLink> llhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> llfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lltibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> llfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jltoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lltoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+
+    std::shared_ptr<OpenGLLink> lrhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]);
+    std::shared_ptr<OpenGLEulerJoint> jrhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrtibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrtoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrtoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+
+    std::shared_ptr<OpenGLLink> lthip = std::dynamic_pointer_cast<OpenGLLink>(root->links[2]);
+    std::shared_ptr<OpenGLEulerJoint> jbackbone = std::dynamic_pointer_cast<OpenGLEulerJoint>(lthip->joints[0]);
+    std::shared_ptr<OpenGLLink> lchest = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jneck = std::dynamic_pointer_cast<OpenGLEulerJoint>(lchest->joints[0]);
+    std::shared_ptr<OpenGLLink> lhead = std::dynamic_pointer_cast<OpenGLLink>(jneck->links[0]);
+
+    std::shared_ptr<OpenGLLink> llchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]);
+    std::shared_ptr<OpenGLEulerJoint> jlarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]);
+    std::shared_ptr<OpenGLLink> llclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> llhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> llradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jlwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> llhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+
+    std::shared_ptr<OpenGLLink> lrchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]);
+    std::shared_ptr<OpenGLEulerJoint> jrarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    std::shared_ptr<OpenGLEulerJoint> jrwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
+    std::shared_ptr<OpenGLLink> lrhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
 
     auto starttime = std::chrono::system_clock::now();
 
@@ -127,7 +171,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            ik_move(destination, toward, root, ltoes);
+            ik_move(destination, toward, jbackbone, llhand);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
