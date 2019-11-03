@@ -6,7 +6,6 @@
 #include "../kinematics/joint/joint.hpp"
 #include "../kinematics/link/link.hpp"
 
-Eigen::MatrixXd MoorePenrosePseudoinverse(Eigen::MatrixXd mat);
 void ik_move(const Eigen::Vector3d& destination, const Eigen::Quaterniond& toward,
         const std::shared_ptr<Joint>& root, const std::shared_ptr<Link>& end_effector);
 

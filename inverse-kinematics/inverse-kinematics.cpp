@@ -15,30 +15,6 @@
 // #define DDEBUG
 #define LABEL(STR) std::left << std::setw(10) << (STR)
 
-#define ENABLE_A true
-
-Eigen::MatrixXd MoorePenrosePseudoinverse(Eigen::MatrixXd mat) {
-    auto mt = mat.transpose();
-    if (mat.cols() < mat.rows()) {
-        // overdeterminent
-        auto tt = mt * mat;
-        auto tti = tt.inverse();
-        if (std::isnan(tti(0, 0)) || std::isinf(tti(0, 0))) {
-            const auto I = Eigen::MatrixXd::Identity(tt.rows(), tt.cols());
-            return (tt - D * I).inverse() * mt; // ?
-        }
-        return tti * mt;
-    } else {
-        auto tt = mat * mt;
-        auto tti = tt.inverse();
-        if (std::isnan(tti(0, 0)) || std::isinf(tti(0, 0))) {
-            const auto I = Eigen::MatrixXd::Identity(tt.rows(), tt.cols());
-            return mt * (tt - D * I).inverse();
-        }
-        return mt * tti;
-    }
-}
-
 void find_path_internal(
     std::vector<std::pair<std::shared_ptr<Joint>, int>>& found_joints,
     std::vector<std::pair<std::shared_ptr<Joint>, int>>& joints,
@@ -186,7 +162,7 @@ void ik_move(
         const int N = 3;
         const int A = 3;
         const double STEP = 0.6;
-        Jacobian.resize(N + (ENABLE_A ? A : 0), points.size() * 3);
+        Jacobian.resize(N + A, points.size() * 3);
         const auto x_axis = Eigen::Vector4d{1, 0, 0, 1};
         const auto y_axis = Eigen::Vector4d{0, 1, 0, 1};
         const auto z_axis = Eigen::Vector4d{0, 0, 1, 1};
@@ -207,7 +183,6 @@ void ik_move(
                 #ifdef DDEBUG
                 std::cout << xyz << " " << angular_velocity.transpose() << std::endl;
                 #endif
-                if (ENABLE_A)
                 for (int i = N; i < N + A; i++) {
                     Jacobian(i, j * 3 + xyz) = angular_velocity(i - N);
                 }
@@ -220,7 +195,7 @@ void ik_move(
         DEBUG("jacobian calculated");
         #endif // DEBUG
         Eigen::VectorXd delta;
-        delta.resize(N + (ENABLE_A ? A : 0));
+        delta.resize(N + A);
         Eigen::Vector3d delta3d = difference * STEP;
         #ifdef DDEBUG
         std::cout << LABEL("delta") << difference.transpose() << std::endl;
@@ -234,7 +209,6 @@ void ik_move(
         std::cout << LABEL("angle") << difference_orientation.angle() << std::endl;
         std::cout << LABEL("w") << w.transpose() << std::endl;
         #endif
-        if (ENABLE_A)
         for (int i = N; i < N + A; i++) {
             delta(i) = w(i - N); // w 넣어야 함
         }
