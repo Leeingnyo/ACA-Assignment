@@ -34,13 +34,13 @@ void OpenGLEulerJoint::draw() {
     glBegin(GL_LINES);
     glColor3f(1, 0, 1); // local x
     glVertex3f(0, 0, 0);
-    glVertex3f(1, 0, 0);
+    glVertex3f(SIZE + 0.2f, 0, 0);
     glColor3f(1, 1, 0); // local y
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 1, 0);
+    glVertex3f(0, SIZE + 0.2f, 0);
     glColor3f(0, 1, 1); // local z
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 1);
+    glVertex3f(0, 0, SIZE + 0.2f);
     glEnd();
 
     for (const auto& link : links) {
