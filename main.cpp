@@ -159,6 +159,7 @@ int main (int argc, char* argv[]) {
             // Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
     auto to2 = Eigen::Vector3d{2, 2, 0};
 
+    int frame = 0;
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
@@ -171,14 +172,33 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-    ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-        std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, llhand, Transform(
-            Eigen::Vector3d{2, -(lthip->direction * lthip->length).y + 0, 3}
-        )),
-        std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(destination)),
-        std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(toward)),
-    });
-
+            if (!screen.isPaused()) {
+                frame++;
+                const double theta = frame * 0.2 * M_PI;
+                const double cos = std::cos(theta);
+                const double sin = std::sin(theta);
+                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, llhand, Transform(
+                        Eigen::Vector3d{cos * 5 + 0.5, sin * 5, 0}
+                    )),
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lhead, Transform(
+                        Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d{0, 0, 1}))
+                    )),
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(
+                        Eigen::Vector3d{cos * 5 - 0.5, sin * 5, 0}
+                    )),
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrfemur, Transform(
+                        Eigen::Vector3d{-1.4, -4, 1}
+                    )),
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, llfemur, Transform(
+                        Eigen::Vector3d{1, -4, 0}
+                    )),
+                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lltoes, Transform(
+                        Eigen::Vector3d{-1.4, -4, 1}
+                    )),
+                    // std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(toward)),
+                });
+            }
             // ik_move(destination, toward, jbackbone, llhand);
             // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
