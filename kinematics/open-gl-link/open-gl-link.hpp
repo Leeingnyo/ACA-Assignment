@@ -4,6 +4,8 @@
 
 class OpenGLLink : public Link {
 public:
+    glm::vec3 cylinder_color = glm::vec3(1, 1, 1);
+
     OpenGLLink() {
     }
 
