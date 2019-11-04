@@ -139,7 +139,8 @@ void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_p
         else return z_axis;
     };
 
-    while (true) {
+    // while (true) {
+    for (int cal = 0; cal < 100000; cal++) {
         steps++;
         Eigen::MatrixXd Jacobian = Eigen::MatrixXd::Zero(r * 3, c * 3);
         Eigen::VectorXd delta;
@@ -215,14 +216,14 @@ void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_p
 
             if (target.destination) {
                 const auto difference = (*target.destination) - end_effector_point;
-                is_close.push_back(difference.norm() < 0.01);
+                is_close.push_back(difference.norm() < 0.02);
                 for (int s = 0; s < N; s++) {
                     delta(i * 3 + s) = difference(s);
                 }
             }
             else {
                 auto difference_orientation = Eigen::AngleAxisd(end_effector_orientation.inverse() * (*target.orientation));
-                is_close.push_back(std::cos(difference_orientation.angle()) > 0.999);
+                is_close.push_back(std::cos(difference_orientation.angle()) > 0.98);
                 Eigen::Vector3d w = difference_orientation.axis() * difference_orientation.angle();
                 for (int s = 0; s < N; s++) {
                     delta(i * 3 + s) = w(s);
