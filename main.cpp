@@ -194,6 +194,21 @@ int main (int argc, char* argv[]) {
         jrarm_to_shulder, jrshoulder, jrelbow, jrwrist
     };
 
+    lhead->cylinder_color.x = 0.5;
+    lhead->cylinder_color.y = 0.5;
+
+    llhand->cylinder_color.y = 0.5;
+    llhand->cylinder_color.z = 0.5;
+    lrhand->cylinder_color.y = 0.5;
+    lrhand->cylinder_color.z = 0.5;
+
+    lltoes->cylinder_color.x = 0.5;
+    lltoes->cylinder_color.z = 0.5;
+    llfemur->cylinder_color.x = 0.5;
+    llfemur->cylinder_color.z = 0.5;
+    lrfemur->cylinder_color.x = 0.5;
+    lrfemur->cylinder_color.z = 0.5;
+
     auto starttime = std::chrono::system_clock::now();
 
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
@@ -354,21 +369,6 @@ int main (int argc, char* argv[]) {
                         if (++frame >= 400) frame = 0;
                     } break;
                     default: {
-                        lhead->cylinder_color.x = 0.5;
-                        lhead->cylinder_color.y = 0.5;
-
-                        llhand->cylinder_color.y = 0.5;
-                        llhand->cylinder_color.z = 0.5;
-                        lrhand->cylinder_color.y = 0.5;
-                        lrhand->cylinder_color.z = 0.5;
-
-                        lltoes->cylinder_color.x = 0.5;
-                        lltoes->cylinder_color.z = 0.5;
-                        llfemur->cylinder_color.x = 0.5;
-                        llfemur->cylinder_color.z = 0.5;
-                        lrfemur->cylinder_color.x = 0.5;
-                        lrfemur->cylinder_color.z = 0.5;
-
                         frame++;
                         const double theta = frame * 0.02 * M_PI;
                         const double cos = std::cos(theta);
