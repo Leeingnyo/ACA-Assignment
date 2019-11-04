@@ -104,6 +104,9 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
     if (key == GLFW_KEY_2 && (action == GLFW_PRESS)) {
         scene_number = 2;
     }
+    if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
+        scene_number = 3;
+    }
 }
 
 void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

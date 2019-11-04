@@ -150,6 +150,15 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<OpenGLEulerJoint> jrwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
     std::shared_ptr<OpenGLLink> lrhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
 
+    auto joints = std::vector<std::shared_ptr<OpenGLEulerJoint>>{
+        root,
+        jlhip, jlknee, jlankle, jltoes,
+        jrhip, jrankle, jrtoes,
+        jbackbone, jneck,
+        jlarm_to_shulder, jlshoulder, jlelbow, jlwrist,
+        jrarm_to_shulder, jrshoulder, jrelbow, jrwrist
+    };
+
     auto starttime = std::chrono::system_clock::now();
 
     // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
@@ -177,9 +186,16 @@ int main (int argc, char* argv[]) {
                 if (scene_number != screen.getSceneNumber()) {
                     frame = 0;
                     scene_number = screen.getSceneNumber();
+                    for (const auto& joint : joints) {
+                        for (int i = 0; i < joint->channel_values.size(); i++) {
+                            joint->channel_values[i] = 0;
+                        }
+                    }
                     std::cout << "choose scene " << scene_number << std::endl;
                 }
                 switch (screen.getSceneNumber()) {
+                    case 3: {
+                    } break;
                     case 2: {
                         // L // O // V // E
 
