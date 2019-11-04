@@ -39,6 +39,41 @@
 #define __int64 long long
 #endif // __WIN32
 
+void drawLove() {
+    glColor3f(0.7f, 0.7f, 0.7f);
+    glBegin(GL_LINES);
+    glVertex3f(4, 3, 1);
+    glVertex3f(4, 1, 1);
+    glVertex3f(4, 1, 1);
+    glVertex3f(2, 1, 1); // L
+    {
+        const int STEPS = 250;
+        const float UNIT_OF_THETA = 2 * M_PI / 250;
+        const float LENGTH = 1.f;
+        for (int i = 0; i < STEPS; i++) {
+            const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
+            const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);
+            const float Q0 = LENGTH * std::cos(UNIT_OF_THETA * (i+1));
+            const float Q1 = LENGTH * std::sin(UNIT_OF_THETA * (i+1));
+            glVertex3f(P0 + 1, P1 + 2, 1);
+            glVertex3f(Q0 + 1, Q1 + 2, 1);
+        }
+    } // O
+    glVertex3f(0, 3, 1);
+    glVertex3f(-1, 1, 1);
+    glVertex3f(-1, 1, 1);
+    glVertex3f(-2, 3, 1); // V
+    glVertex3f(-2, 3, 1);
+    glVertex3f(-4, 3, 1);
+    glVertex3f(-2, 3, 1);
+    glVertex3f(-2, 1, 1);
+    glVertex3f(-2, 1, 1);
+    glVertex3f(-4, 1, 1);
+    glVertex3f(-2, 2, 1);
+    glVertex3f(-4, 2, 1); // E
+    glEnd();
+}
+
 int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
@@ -197,8 +232,39 @@ int main (int argc, char* argv[]) {
                     case 3: {
                     } break;
                     case 2: {
-                        // L // O // V // E
+                        drawLove();
 
+                        if (frame < 250) {
+                            //
+                            if (frame < 125) {
+
+                            }
+                            else {
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{4, 3, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
+                            ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                    Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                )),
+                            });
+                        }
+                        else if (frame < 500) {
+                            //
+                        }
+                        else if (frame < 750) {
+                            //
+                        }
+                        else {
+                            //
+                        }
+                        if (++frame >= 1000) frame = 0;
                     } break;
                     default: {
                         lhead->cylinder_color.x = 0.5;
