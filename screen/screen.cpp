@@ -98,6 +98,12 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
             std::cout << "resume" << std::endl;
         }
     }
+    if (key == GLFW_KEY_1 && (action == GLFW_PRESS)) {
+        scene_number = 1;
+    }
+    if (key == GLFW_KEY_2 && (action == GLFW_PRESS)) {
+        scene_number = 2;
+    }
 }
 
 void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

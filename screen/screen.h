@@ -10,6 +10,7 @@ private:
     bool is_previous_position_available = false;
     bool is_shift = false;
     bool is_paused = false;
+    unsigned int scene_number = 1;
 
     double prev_x;
     double prev_y;
@@ -34,6 +35,10 @@ public:
 
     bool isPaused() {
         return is_paused;
+    }
+
+    int getSceneNumber() {
+        return scene_number;
     }
 
     int getWidth() const {
