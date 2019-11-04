@@ -14,6 +14,7 @@
 // #define DEBUG(STR) (std::cout << "DEBUG: " << STR << std::endl)
 // #define DDEBUG
 #define LABEL(STR) std::left << std::setw(10) << (STR)
+#define FLEXIBILITY_CONSTANT 1.25
 
 void find_path_internal(
     std::vector<std::pair<std::shared_ptr<Joint>, int>>& found_joints,
@@ -74,6 +75,7 @@ Eigen::Matrix3d matrix4to3(const Eigen::Matrix4d& mat) {
 void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>& transforms) {
     int r = transforms.size();
     auto joints = std::vector<std::shared_ptr<EulerJoint>>();
+    std::vector<int> joints_w;
     auto joint_path_list = std::vector< std::vector<std::pair<std::shared_ptr<Joint>, int>> >();
     auto index_of = [](const auto& joints, const std::shared_ptr<EulerJoint>& euler_joint) {
         int i = 0;
@@ -92,11 +94,18 @@ void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_p
         const auto&& joint_pairs = find_path(root, end_effector);
         joint_path_list.push_back(joint_pairs);
 
-        for (const auto& joint_pair : joint_pairs) {
+        for (int i = 0; i < joint_pairs.size(); i++) {
+            const auto& joint_pair = joint_pairs[i];
             const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint_pair.first);
             int index = index_of(joints, euler_joint);
+            int w = joint_pairs.size() - i - 1;
             if (index < 0) {
                 joints.push_back(euler_joint);
+                joints_w.push_back(w);
+            } else {
+                if (joints_w[index] < w) {
+                    joints_w[index] = w;
+                }
             }
         }
     }
@@ -239,12 +248,12 @@ void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_p
                     if (target.destination) {
                         const auto cross = angular_velocity.cross(end_effector_point - point);
                         for (int s = 0; s < N; s++) {
-                            Jacobian(i * 3 + s, jacobian_index * 3 + xyz) = cross(s);
+                            Jacobian(i * 3 + s, jacobian_index * 3 + xyz) = cross(s) * pow(FLEXIBILITY_CONSTANT, joints_w[j]);
                         }
                     }
                     else {
                         for (int s = 0; s < N; s++) {
-                            Jacobian(i * 3 + s, jacobian_index * 3 + xyz) = angular_velocity(s);
+                            Jacobian(i * 3 + s, jacobian_index * 3 + xyz) = angular_velocity(s) * pow(FLEXIBILITY_CONSTANT, joints_w[j]);
                         }
                     }
                 }
@@ -293,16 +302,17 @@ void ik_moves(const std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_p
                 return -1;
             };
             int x_index = find_index(euler_joint, EulerJointChannel::X_R);
-            if (x_index >= 0) euler_joint->channel_values[x_index] += result(i * 3 + 0); // x
+            if (x_index >= 0) euler_joint->channel_values[x_index] += result(i * 3 + 0) / pow(FLEXIBILITY_CONSTANT, joints_w[i]); // x
             int y_index = find_index(euler_joint, EulerJointChannel::Y_R);
-            if (y_index >= 0) euler_joint->channel_values[y_index] += result(i * 3 + 1); // y
+            if (y_index >= 0) euler_joint->channel_values[y_index] += result(i * 3 + 1) / pow(FLEXIBILITY_CONSTANT, joints_w[i]); // y
             int z_index = find_index(euler_joint, EulerJointChannel::Z_R);
-            if (z_index >= 0) euler_joint->channel_values[z_index] += result(i * 3 + 2); // z
+            if (z_index >= 0) euler_joint->channel_values[z_index] += result(i * 3 + 2) / pow(FLEXIBILITY_CONSTANT, joints_w[i]); // z
         }
         #ifdef DEBUG
         DEBUG("apply delta");
         #endif // DEBUG
     }
+    std::cout << "too many calculation! see you next frame" << std::endl;
 }
 
 void ik_move(
@@ -458,7 +468,7 @@ void ik_move(
         if (is_singular) {
             // std::cout << "----------------------------------------------------------------" << std::endl;
             for (int i = 0; i < result.size(); i++) {
-                result(i) += 5;
+                result(i) += 1;
             }
         }
 

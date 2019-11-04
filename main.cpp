@@ -352,7 +352,6 @@ int main (int argc, char* argv[]) {
                             }
                         }
                         if (++frame >= 400) frame = 0;
-                        std::cout << "frame: " << frame << std::endl;
                     } break;
                     default: {
                         lhead->cylinder_color.x = 0.5;
