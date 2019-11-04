@@ -1,3 +1,5 @@
+#include <iostream>
+
 #define GLFW_INCLUDE_GLU
 #include "../GLFW/glfw3.h"
 
@@ -66,18 +68,60 @@ void Screen::mouse_button_callback(GLFWwindow* window, int button, int action, i
 }
 
 void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_LEFT_SHIFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        is_shift = true;
+    } else {
+        is_shift = false;
+    }
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveUp();
+        if (is_shift) for (int i = 0; i < 9; i++) camera.moveUp();
     }
     if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveLeft();
+        if (is_shift) for (int i = 0; i < 9; i++) camera.moveLeft();
     }
     if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveDown();
+        if (is_shift) for (int i = 0; i < 9; i++) camera.moveDown();
     }
     if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveRight();
+        if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
     }
+    if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS)) {
+        if (!is_paused) {
+            is_paused = true;
+            std::cout << "paused" << std::endl;
+        } else {
+            is_paused = false;
+            std::cout << "resume" << std::endl;
+        }
+    }
+    if (key == GLFW_KEY_1 && (action == GLFW_PRESS)) {
+        scene_number = 1;
+    }
+    if (key == GLFW_KEY_2 && (action == GLFW_PRESS)) {
+        scene_number = 2;
+    }
+    if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
+        scene_number = 3;
+    }
+}
+
+void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (is_shift){
+        glm::vec3 v = glm::normalize(camera.getOrigin() - camera.getEye());
+        camera.setEye(
+            camera.getEye() + (float)yoffset * v * 0.1f
+        );
+    }
+    /*
+    else {
+        fov -= yoffset * 0.5;
+        fov = Clamp(fov, 5, 60);
+    }
+    */
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -90,4 +134,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Screen::current_screen->key_callback(window, key, scancode, action, mods);
+}
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    Screen::current_screen->scroll_callback(window, xoffset, yoffset);
 }

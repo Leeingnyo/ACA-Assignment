@@ -8,6 +8,9 @@ private:
 
     bool is_mouse_left_clicked = false;
     bool is_previous_position_available = false;
+    bool is_shift = false;
+    bool is_paused = false;
+    unsigned int scene_number = 3;
 
     double prev_x;
     double prev_y;
@@ -30,6 +33,14 @@ public:
         return width / (float) height;
     }
 
+    bool isPaused() {
+        return is_paused;
+    }
+
+    int getSceneNumber() {
+        return scene_number;
+    }
+
     int getWidth() const {
         return width;
     }
@@ -47,8 +58,10 @@ public:
     void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
     void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 };
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);

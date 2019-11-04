@@ -12,7 +12,7 @@ void OpenGLLink::draw() {
     glPushMatrix();
 
     glPushMatrix();
-    glColor3f(1, 1, 1);
+    glColor3f(cylinder_color.x, cylinder_color.y, cylinder_color.z);
 
     GLfloat matrix[16];
     getRotationPoint(matrix, direction, glm::vec3(0, 0, 0));
