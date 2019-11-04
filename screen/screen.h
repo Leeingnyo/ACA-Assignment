@@ -10,7 +10,7 @@ private:
     bool is_previous_position_available = false;
     bool is_shift = false;
     bool is_paused = false;
-    unsigned int scene_number = 1;
+    unsigned int scene_number = 3;
 
     double prev_x;
     double prev_y;
