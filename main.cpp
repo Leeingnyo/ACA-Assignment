@@ -232,39 +232,127 @@ int main (int argc, char* argv[]) {
                     case 3: {
                     } break;
                     case 2: {
+                        static int passed_frame = 0;
                         drawLove();
 
-                        if (frame < 250) {
-                            //
-                            if (frame < 125) {
-
-                            }
-                            else {
+                        if (frame < 100) {
+                            if (frame < 50) {
+                                passed_frame = 0;
                                 ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
                                     std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{4, 3, 1}
+                                        Eigen::Vector3d{4, 3 - frame * 2 / 50.0, 1}
                                     )),
                                     std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
                                         Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
                                     )),
                                 });
                             }
+                            else {
+                                passed_frame = 50;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{4 - (frame - passed_frame) * 2 / 50.0, 1, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
+                        }
+                        else if (frame < 200) {
+                            passed_frame = 100;
                             ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                    Eigen::Vector3d{
+                                        std::cos((frame - passed_frame) * 2 * M_PI / 100.0) + 1,
+                                        std::sin((frame - passed_frame) * 2 * M_PI / 100.0) + 2,
+                                        1
+                                    }
+                                )),
                                 std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
                                     Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
                                 )),
                             });
                         }
-                        else if (frame < 500) {
-                            //
-                        }
-                        else if (frame < 750) {
-                            //
+                        else if (frame < 300) {
+                            if (frame < 250) {
+                                passed_frame = 200;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{
+                                            0 - (frame - passed_frame) / 50.0,
+                                            3 - (frame - passed_frame) / 50.0 * 2,
+                                            1
+                                        }
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            } else {
+                                passed_frame = 250;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{
+                                            -1 - (frame - passed_frame) / 50.0,
+                                            1 + (frame - passed_frame) / 50.0 * 2,
+                                            1
+                                        }
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
                         }
                         else {
-                            //
+                            if (frame < 325) {
+                                passed_frame = 300;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 3, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
+                            else if (frame < 350) {
+                                passed_frame = 325;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{-2, 3 - (frame - passed_frame) / 25.0 * 2, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
+                            else if (frame < 375) {
+                                passed_frame = 350;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 1, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
+                            else {
+                                passed_frame = 375;
+                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 2, 1}
+                                    )),
+                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
+                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
+                                    )),
+                                });
+                            }
                         }
-                        if (++frame >= 1000) frame = 0;
+                        if (++frame >= 400) frame = 0;
+                        std::cout << "frame: " << frame << std::endl;
                     } break;
                     default: {
                         lhead->cylinder_color.x = 0.5;
