@@ -39,41 +39,6 @@
 #define __int64 long long
 #endif // __WIN32
 
-void drawLove() {
-    glColor3f(0.7f, 0.7f, 0.7f);
-    glBegin(GL_LINES);
-    glVertex3f(4, 3, 1);
-    glVertex3f(4, 1, 1);
-    glVertex3f(4, 1, 1);
-    glVertex3f(2, 1, 1); // L
-    {
-        const int STEPS = 250;
-        const float UNIT_OF_THETA = 2 * M_PI / 250;
-        const float LENGTH = 1.f;
-        for (int i = 0; i < STEPS; i++) {
-            const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
-            const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);
-            const float Q0 = LENGTH * std::cos(UNIT_OF_THETA * (i+1));
-            const float Q1 = LENGTH * std::sin(UNIT_OF_THETA * (i+1));
-            glVertex3f(P0 + 1, P1 + 2, 1);
-            glVertex3f(Q0 + 1, Q1 + 2, 1);
-        }
-    } // O
-    glVertex3f(0, 3, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(-2, 3, 1); // V
-    glVertex3f(-2, 3, 1);
-    glVertex3f(-4, 3, 1);
-    glVertex3f(-2, 3, 1);
-    glVertex3f(-2, 1, 1);
-    glVertex3f(-2, 1, 1);
-    glVertex3f(-4, 1, 1);
-    glVertex3f(-2, 2, 1);
-    glVertex3f(-4, 2, 1); // E
-    glEnd();
-}
-
 int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
@@ -85,7 +50,7 @@ int main (int argc, char* argv[]) {
     }
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(960, 720, "IK", NULL, NULL);
+    window = glfwCreateWindow(960, 720, "Controllable Character", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -131,94 +96,10 @@ int main (int argc, char* argv[]) {
     auto bvh_tokens = parser.scan_from_string(file_content);
     auto bvh = parser.parse_from_tokens(bvh_tokens);
     std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
-
-    std::shared_ptr<OpenGLEulerJoint> root = std::make_shared<OpenGLEulerJoint>();
-    root->channel_values = bvh_kinematics->channel_values;
-    root->channels = bvh_kinematics->channels;
-    root->links = bvh_kinematics->links;
-    root->related_position = bvh_kinematics->related_position;
-
-    // TODO 인간클래스로 빼기?
-    std::shared_ptr<OpenGLLink> llhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lltibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jltoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lltoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-
-    std::shared_ptr<OpenGLLink> lrhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]);
-    std::shared_ptr<OpenGLEulerJoint> jrhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrtibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrtoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrtoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-
-    std::shared_ptr<OpenGLLink> lthip = std::dynamic_pointer_cast<OpenGLLink>(root->links[2]);
-    std::shared_ptr<OpenGLEulerJoint> jbackbone = std::dynamic_pointer_cast<OpenGLEulerJoint>(lthip->joints[0]);
-    std::shared_ptr<OpenGLLink> lchest = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jneck = std::dynamic_pointer_cast<OpenGLEulerJoint>(lchest->joints[0]);
-    std::shared_ptr<OpenGLLink> lhead = std::dynamic_pointer_cast<OpenGLLink>(jneck->links[0]);
-
-    std::shared_ptr<OpenGLLink> llchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]);
-    std::shared_ptr<OpenGLEulerJoint> jlarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]);
-    std::shared_ptr<OpenGLLink> llclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-
-    std::shared_ptr<OpenGLLink> lrchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]);
-    std::shared_ptr<OpenGLEulerJoint> jrarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-
-    auto joints = std::vector<std::shared_ptr<OpenGLEulerJoint>>{
-        root,
-        jlhip, jlknee, jlankle, jltoes,
-        jrhip, jrankle, jrtoes,
-        jbackbone, jneck,
-        jlarm_to_shulder, jlshoulder, jlelbow, jlwrist,
-        jrarm_to_shulder, jrshoulder, jrelbow, jrwrist
-    };
-
-    lhead->cylinder_color.x = 0.5;
-    lhead->cylinder_color.y = 0.5;
-
-    llhand->cylinder_color.y = 0.5;
-    llhand->cylinder_color.z = 0.5;
-    lrhand->cylinder_color.y = 0.5;
-    lrhand->cylinder_color.z = 0.5;
-
-    lltoes->cylinder_color.x = 0.5;
-    lltoes->cylinder_color.z = 0.5;
-    llfemur->cylinder_color.x = 0.5;
-    llfemur->cylinder_color.z = 0.5;
-    lrfemur->cylinder_color.x = 0.5;
-    lrfemur->cylinder_color.z = 0.5;
+    std::shared_ptr<RootJoint> root = std::dynamic_pointer_cast<RootJoint>(bvh_kinematics);
 
     auto starttime = std::chrono::system_clock::now();
 
-    // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
-    auto destination = Eigen::Vector3d{1.1446, -9, 2};
-    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
-            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
-            // Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
-    auto to2 = Eigen::Vector3d{2, 2, 0};
-
-    int frame = 0;
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
@@ -231,174 +112,7 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            static int scene_number = screen.getSceneNumber();
-            if (!screen.isPaused()) {
-                if (scene_number != screen.getSceneNumber()) {
-                    frame = 0;
-                    scene_number = screen.getSceneNumber();
-                    for (const auto& joint : joints) {
-                        for (int i = 0; i < joint->channel_values.size(); i++) {
-                            joint->channel_values[i] = 0;
-                        }
-                    }
-                    std::cout << "choose scene " << scene_number << std::endl;
-                }
-                switch (screen.getSceneNumber()) {
-                    case 3: {
-                    } break;
-                    case 2: {
-                        static int passed_frame = 0;
-                        drawLove();
-
-                        if (frame < 100) {
-                            if (frame < 50) {
-                                passed_frame = 0;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{4, 3 - frame * 2 / 50.0, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else {
-                                passed_frame = 50;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{4 - (frame - passed_frame) * 2 / 50.0, 1, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        else if (frame < 200) {
-                            passed_frame = 100;
-                            ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                    Eigen::Vector3d{
-                                        std::cos((frame - passed_frame) * 2 * M_PI / 100.0) + 1,
-                                        std::sin((frame - passed_frame) * 2 * M_PI / 100.0) + 2,
-                                        1
-                                    }
-                                )),
-                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                    Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                )),
-                            });
-                        }
-                        else if (frame < 300) {
-                            if (frame < 250) {
-                                passed_frame = 200;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{
-                                            0 - (frame - passed_frame) / 50.0,
-                                            3 - (frame - passed_frame) / 50.0 * 2,
-                                            1
-                                        }
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            } else {
-                                passed_frame = 250;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{
-                                            -1 - (frame - passed_frame) / 50.0,
-                                            1 + (frame - passed_frame) / 50.0 * 2,
-                                            1
-                                        }
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        else {
-                            if (frame < 325) {
-                                passed_frame = 300;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 3, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else if (frame < 350) {
-                                passed_frame = 325;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2, 3 - (frame - passed_frame) / 25.0 * 2, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else if (frame < 375) {
-                                passed_frame = 350;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 1, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else {
-                                passed_frame = 375;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 2, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        if (++frame >= 400) frame = 0;
-                    } break;
-                    default: {
-                        frame++;
-                        const double theta = frame * 0.02 * M_PI;
-                        const double cos = std::cos(theta);
-                        const double sin = std::sin(theta);
-                        ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, llhand, Transform(
-                                Eigen::Vector3d{cos * 5 + 0.5, sin * 5, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lhead, Transform(
-                                Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d{0, 0, 1}))
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(
-                                Eigen::Vector3d{cos * 5 - 0.5, sin * 5, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrfemur, Transform(
-                                Eigen::Vector3d{-1.4, -4, 1}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, llfemur, Transform(
-                                Eigen::Vector3d{1, -4, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lltoes, Transform(
-                                Eigen::Vector3d{-1.4, -4, 1}
-                            )),
-                        });
-                        break;
-                    }
-                }
-            }
-            // ik_move(destination, toward, jbackbone, llhand);
-            // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
+            root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
         }
 
         { // projection

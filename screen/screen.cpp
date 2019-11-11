@@ -89,24 +89,6 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
         camera.moveRight();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
     }
-    if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS)) {
-        if (!is_paused) {
-            is_paused = true;
-            std::cout << "paused" << std::endl;
-        } else {
-            is_paused = false;
-            std::cout << "resume" << std::endl;
-        }
-    }
-    if (key == GLFW_KEY_1 && (action == GLFW_PRESS)) {
-        scene_number = 1;
-    }
-    if (key == GLFW_KEY_2 && (action == GLFW_PRESS)) {
-        scene_number = 2;
-    }
-    if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
-        scene_number = 3;
-    }
 }
 
 void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

@@ -9,8 +9,6 @@ private:
     bool is_mouse_left_clicked = false;
     bool is_previous_position_available = false;
     bool is_shift = false;
-    bool is_paused = false;
-    unsigned int scene_number = 3;
 
     double prev_x;
     double prev_y;
@@ -31,14 +29,6 @@ public:
 
     float getAspect() const {
         return width / (float) height;
-    }
-
-    bool isPaused() {
-        return is_paused;
-    }
-
-    int getSceneNumber() {
-        return scene_number;
     }
 
     int getWidth() const {
