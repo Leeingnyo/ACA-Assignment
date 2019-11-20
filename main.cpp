@@ -35,6 +35,8 @@
 
 #include "inverse-kinematics/inverse-kinematics.h"
 
+#include "motions/motion.hpp"
+
 #ifndef __WIN32
 #define __int64 long long
 #endif // __WIN32
@@ -81,6 +83,18 @@ int main (int argc, char* argv[]) {
     }
     std::ifstream bvh_file(argv[1]);
     */
+
+    Motion motion1;
+    motion1.position = Eigen::Vector3d{0, 0, 0};
+    motion1.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(90, Eigen::Vector3d(0, 0, 1))));
+    Motion motion2;
+    motion2.position = Eigen::Vector3d{10, 0, 0};
+    motion2.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(90, Eigen::Vector3d(0, 0, 1))));
+
+    Displacement d = motion1 - motion2;
+    std::cout << d.position << std::endl;
+    std::cout << d.orientations[0].toRotationMatrix() << std::endl;
+
     std::ifstream bvh_file("Trial001.bvh");
     std::string file_content;
     if (bvh_file.is_open()) {

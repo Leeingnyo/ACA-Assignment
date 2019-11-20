@@ -74,6 +74,8 @@
 		<Unit filename="kinematics/root-joint/root-joint.cpp" />
 		<Unit filename="kinematics/root-joint/root-joint.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="motions/motion-clip.hpp" />
+		<Unit filename="motions/motion.hpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />
 		<Extensions>
