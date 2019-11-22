@@ -84,6 +84,7 @@ int main (int argc, char* argv[]) {
     std::ifstream bvh_file(argv[1]);
     */
 
+    /*
     Motion motion1;
     motion1.position = Eigen::Vector3d{0, 0, 0};
     motion1.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1))));
@@ -113,6 +114,7 @@ int main (int argc, char* argv[]) {
     std::cout << "motion4 = m1 + d2 = m1 - (m2 - m1) = m2" << std::endl;
     std::cout << motion4.position << std::endl;
     std::cout << (motion4.orientations[0]).toRotationMatrix() << std::endl;
+    */
 
     std::ifstream bvh_file("Trial001.bvh");
     std::string file_content;
@@ -130,6 +132,8 @@ int main (int argc, char* argv[]) {
     auto bvh = parser.parse_from_tokens(bvh_tokens);
     std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
     std::shared_ptr<RootJoint> root = std::dynamic_pointer_cast<RootJoint>(bvh_kinematics);
+
+    std::cout << root->motion_clip.motions.size() << std::endl;
 
     auto starttime = std::chrono::system_clock::now();
 
