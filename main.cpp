@@ -86,14 +86,33 @@ int main (int argc, char* argv[]) {
 
     Motion motion1;
     motion1.position = Eigen::Vector3d{0, 0, 0};
-    motion1.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(90, Eigen::Vector3d(0, 0, 1))));
+    motion1.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1))));
+    std::cout << "motion1" << std::endl;
+    std::cout << motion1.position << std::endl;
+    std::cout << (motion1.orientations[0]).toRotationMatrix() << std::endl;
+
     Motion motion2;
     motion2.position = Eigen::Vector3d{10, 0, 0};
-    motion2.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(90, Eigen::Vector3d(0, 0, 1))));
+    motion2.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))));
+    std::cout << "motion2" << std::endl;
+    std::cout << motion2.position << std::endl;
+    std::cout << (motion2.orientations[0]).toRotationMatrix() << std::endl;
 
     Displacement d = motion1 - motion2;
-    std::cout << d.position << std::endl;
-    std::cout << d.orientations[0].toRotationMatrix() << std::endl;
+    std::cout << "d = m1 - m2" << std::endl;
+    std::cout << d.vectors[0] << std::endl;
+    std::cout << Eigen::AngleAxisd(d.vectors[1].norm(), d.vectors[1].normalized()).toRotationMatrix() << std::endl;
+
+    Motion motion3 = motion2 + d;
+    std::cout << "motion3 = m2 + d = m2 + (m1 - m2) = m1" << std::endl;
+    std::cout << motion3.position << std::endl;
+    std::cout << (motion3.orientations[0]).toRotationMatrix() << std::endl;
+
+    Displacement d2 = motion2 - motion1;
+    Motion motion4 = motion1 + d2;
+    std::cout << "motion4 = m1 + d2 = m1 - (m2 - m1) = m2" << std::endl;
+    std::cout << motion4.position << std::endl;
+    std::cout << (motion4.orientations[0]).toRotationMatrix() << std::endl;
 
     std::ifstream bvh_file("Trial001.bvh");
     std::string file_content;
