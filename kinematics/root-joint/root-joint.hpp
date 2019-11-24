@@ -17,7 +17,6 @@ private:
 public:
     std::vector<float> animation_information;
     int number_of_channels;
-    double frame_time;
 
     MotionClip motion_clip;
 

@@ -7,4 +7,5 @@
 class MotionClip {
 public:
     std::vector<Motion> motions;
+    double frame_time;
 };

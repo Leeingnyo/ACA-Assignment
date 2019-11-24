@@ -62,7 +62,6 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
 
     root_joint->number_of_channels = number_of_channels;
     root_joint->animation_information = bvh->motion->motion_data;
-    root_joint->frame_time = bvh->motion->frame_time;
 
     const int length = bvh->motion->motion_data.size() / number_of_channels;
     for (int i = 0; i < length; i++) {
@@ -83,6 +82,7 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
         }
         root_joint->motion_clip.motions.push_back(motion);
     }
+    root_joint->motion_clip.frame_time = bvh->motion->frame_time;
 
     return root_joint;
 }
