@@ -99,6 +99,7 @@ int main (int argc, char* argv[]) {
 
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
 
+    // from cmu
     std::shared_ptr<RootJoint> root = load_motion(parser, "motion-data/stand.bvh");
     std::shared_ptr<RootJoint> stand = load_motion(parser, "motion-data/stand.bvh");
     std::shared_ptr<RootJoint> turn_left = load_motion(parser, "motion-data/turn_left.bvh");
@@ -115,6 +116,15 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<RootJoint> run_veer_right = load_motion(parser, "motion-data/run_veer_right.bvh");
     std::shared_ptr<RootJoint> jump = load_motion(parser, "motion-data/jump.bvh");
     std::shared_ptr<RootJoint> forward_jump = load_motion(parser, "motion-data/stand-jump.bvh");
+
+    // from mrl
+    std::shared_ptr<RootJoint> turn_backward = load_motion(parser, "motion-data/turn-backward.bvh");
+    {
+        const auto look_toward = Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+        for (Motion& motion : turn_backward->motion_clip.motions) {
+            motion.orientations[0] = motion.orientations[0] * look_toward;
+        }
+    }
     // motion data
 
     MotionPack p_stand("stand", 0, 20, 19, &stand->motion_clip);
@@ -132,6 +142,8 @@ int main (int argc, char* argv[]) {
     MotionPack p_run_veer_right("run veer right", 9, 29, 20, &run_veer_right->motion_clip);
     MotionPack p_jump("jump", 0, 116, 20, &jump->motion_clip);
     MotionPack p_forward_jump("forward jump", 0, 73, 20, &forward_jump->motion_clip);
+
+    MotionPack p_turn_backward("turn backward", 250, 320, 30, &turn_backward->motion_clip);
     // wrap motions
 
     p_walk_start.default_next =
@@ -140,6 +152,7 @@ int main (int argc, char* argv[]) {
             p_turn_left.default_next =
             p_turn_right.default_next = &p_walk;
     p_walk_stop.default_next =
+            p_turn_backward.default_next =
             p_jump.default_next =
             p_forward_jump.default_next = &p_stand;
     p_run_left.default_next =
@@ -157,6 +170,7 @@ int main (int argc, char* argv[]) {
         }
     }
     character_state.input_map[State::CS_STAND]['W'] = std::pair<MotionPack const *, State>(&p_walk_start, State::CS_WALK);
+    character_state.input_map[State::CS_STAND]['S'] = std::pair<MotionPack const *, State>(&p_turn_backward, State::CS_STAND);
     character_state.input_map[State::CS_STAND]['X'] = std::pair<MotionPack const *, State>(&p_jump, State::CS_STAND);
     character_state.input_map[State::CS_STAND][' '] = std::pair<MotionPack const *, State>(&p_forward_jump, State::CS_STAND);
 
@@ -172,6 +186,7 @@ int main (int argc, char* argv[]) {
     character_state.input_map[State::CS_RUN]['S'] = std::pair<MotionPack const *, State>(&p_walk, State::CS_WALK);
     character_state.input_map[State::CS_RUN]['D'] = std::pair<MotionPack const *, State>(&p_run_right, State::CS_RUN);
     character_state.input_map[State::CS_RUN]['E'] = std::pair<MotionPack const *, State>(&p_run_veer_right, State::CS_RUN);
+    // input mapping
 
     character_state.current_motion = &p_stand;
     character_state.next_motion = nullptr;
