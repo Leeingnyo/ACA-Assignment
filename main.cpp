@@ -61,16 +61,17 @@ std::shared_ptr<RootJoint> load_motion(inyong_bvh::BvhParser& parser, const char
 
 class MotionPack {
 public:
-    MotionClip* motion_clip;
+    MotionClip const * motion_clip;
     std::string name;
     int start;
     int length;
     int blend;
-    MotionPack* default_next;
+    MotionPack const * default_next;
 
     MotionPack(std::string name, int start, int end, int blend, MotionClip* motion_clip) :
             name(name), start(start), blend(blend), motion_clip(motion_clip) {
         length = end - start;
+        default_next = this;
     }
 };
 
@@ -114,23 +115,50 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<RootJoint> root = load_motion(parser, "motion-data/stand.bvh");
     std::shared_ptr<RootJoint> stand = load_motion(parser, "motion-data/stand.bvh");
     std::shared_ptr<RootJoint> turn_left = load_motion(parser, "motion-data/turn_left.bvh");
+    std::shared_ptr<RootJoint> veer_left = load_motion(parser, "motion-data/veer_left.bvh");
+    std::shared_ptr<RootJoint> turn_right = load_motion(parser, "motion-data/turn_right.bvh");
+    std::shared_ptr<RootJoint> veer_right = load_motion(parser, "motion-data/veer_right.bvh");
     std::shared_ptr<RootJoint> walk = load_motion(parser, "motion-data/walk.bvh");
+    std::shared_ptr<RootJoint> walk_start = load_motion(parser, "motion-data/walk_start.bvh");
+    std::shared_ptr<RootJoint> walk_stop = load_motion(parser, "motion-data/walk_stop.bvh");
+    std::shared_ptr<RootJoint> run = load_motion(parser, "motion-data/run.bvh");
+    std::shared_ptr<RootJoint> run_left = load_motion(parser, "motion-data/run_left.bvh");
+    std::shared_ptr<RootJoint> run_right = load_motion(parser, "motion-data/run_right.bvh");
+    std::shared_ptr<RootJoint> run_veer_left = load_motion(parser, "motion-data/run_veer_left.bvh");
+    std::shared_ptr<RootJoint> run_veer_right = load_motion(parser, "motion-data/run_veer_right.bvh");
+    // motion data
 
-    MotionPack p_stand("stand", 0, 20, 20, &stand->motion_clip);
-    MotionPack p_walk("walk", 0, 35, 20, &walk->motion_clip);
+    MotionPack p_stand("stand", 0, 20, 19, &stand->motion_clip);
     MotionPack p_turn_left("turn left", 53, 117, 20, &turn_left->motion_clip);
+    MotionPack p_veer_left("veer left", 32, 97, 20, &veer_left->motion_clip);
+    MotionPack p_turn_right("turn right", 38, 78, 20, &turn_right->motion_clip);
+    MotionPack p_veer_right("veer right", 18, 87, 20, &veer_right->motion_clip);
+    MotionPack p_walk("walk", 0, 35, 20, &walk->motion_clip);
+    MotionPack p_walk_start("walk start", 2, 27, 20, &walk_start->motion_clip);
+    MotionPack p_walk_stop("walk stop", 22, 64, 20, &walk_stop->motion_clip);
+    MotionPack p_run("run", 1, 25, 25, &run->motion_clip);
+    MotionPack p_run_left("run left", 8, 28, 20, &run_left->motion_clip);
+    MotionPack p_run_right("run right", 20, 38, 20, &run_right->motion_clip);
+    MotionPack p_run_veer_left("run veer left", 9, 33, 20, &run_veer_left->motion_clip);
+    MotionPack p_run_veer_right("run veer right", 8, 30, 20, &run_veer_right->motion_clip);
+    // wrap motions
 
-    p_stand.default_next = &p_stand;
-    p_walk.default_next = &p_turn_left;
+    p_walk.default_next = &p_walk;
     p_turn_left.default_next = &p_walk;
+    p_turn_right.default_next = &p_walk;
+    p_walk_start.default_next = &p_walk;
+    p_walk_stop.default_next = &p_stand;
+
+    p_run.default_next = &p_run_right;
+    p_run_right.default_next = &p_run;
 
     Motion previous_motion;
 
     MotionPack const * current_motion;
     MotionPack const * next_motion;
     previous_motion = p_stand.motion_clip->motions.back();
-    current_motion = &p_stand;
-    next_motion = &p_turn_left;
+    current_motion = &p_run;
+    next_motion = &p_run_right;
     // get default next function
     // stand -> stand, walk -> walk straight, run -> run straight
 
@@ -146,13 +174,15 @@ int main (int argc, char* argv[]) {
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        Motion m;
+
         { // animate
             auto current = std::chrono::system_clock::now();
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            int total_frame = current_motion->length;
             int current_frame = (int)(delta_milli / current_motion->motion_clip->frame_time / 1000);
+            int total_frame = current_motion->length;
             int offset = current_motion->start;
 
             if (current_frame < total_frame) {
@@ -169,9 +199,11 @@ int main (int argc, char* argv[]) {
                 next_motion = current_motion->default_next;
                 starttime = current;
                 current_frame = 0;
+                std::cout << "Motion Changed: current motion is '" << current_motion->name << "'" << std::endl;
             }
 
-            Motion m = current_motion->motion_clip->motions[current_frame + offset];
+            offset = current_motion->start;
+            m = current_motion->motion_clip->motions[current_frame + offset];
             Motion current_motion_start = current_motion->motion_clip->motions[offset];
             m.position = global_orientation * (m.position - current_motion_start.position) + global_position;
             m.orientations[0] = global_orientation * m.orientations[0];
@@ -195,7 +227,16 @@ int main (int argc, char* argv[]) {
             const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
             const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
             const glm::vec3& up = Screen::current_screen->getCamera().getUp();
-            gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
+            auto& fixed = m.position;
+            gluLookAt(
+                eye.x + fixed(0) * 0.1f,
+                eye.y + fixed(1) * 0.1f,
+                eye.z + fixed(2) * 0.1f,
+                ori.x + fixed(0) * 0.1f,
+                ori.y + fixed(1) * 0.1f,
+                ori.z + fixed(2) * 0.1f,
+                up.x, up.y, up.z
+            );
         }
 
         { // display
@@ -213,6 +254,7 @@ int main (int argc, char* argv[]) {
 
             root->draw();
 
+            /*
             glBegin(GL_LINES);
             glColor3f(1, 0, 0);
             glVertex3f(-10, 0, 0);
@@ -226,6 +268,7 @@ int main (int argc, char* argv[]) {
             glVertex3f(0, 0, -10);
             glVertex3f(0, 0, 10); // z
             glEnd();
+            */
 
             /*
             glPushMatrix();
@@ -254,8 +297,28 @@ int main (int argc, char* argv[]) {
 
             glPushMatrix();
             { // display object independently of camera
+                const float LENGTH = 7.5f;
                 const auto& origin = Screen::current_screen->getCamera().getOrigin();
-                glTranslatef(origin.x, origin.y, origin.z);
+                glTranslatef(
+                    origin.x + m.position(0) * 0.1f,
+                    origin.y + m.position(1) * 0.1f,
+                    origin.z + m.position(2) * 0.1f
+                );
+
+                glBegin(GL_LINES);
+                {
+                    RGBColor(255, 0, 0);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(LENGTH, 0, 0);
+                    RGBColor(0, 255, 0);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(0, LENGTH, 0);
+                    RGBColor(0, 0, 255);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(0, 0, LENGTH);
+                }
+                glEnd();
+
                 GLfloat matrix[16];
                 getRotation(matrix, Screen::current_screen->getCamera().getEye() -
                         Screen::current_screen->getCamera().getOrigin(),
@@ -266,12 +329,11 @@ int main (int argc, char* argv[]) {
                 static auto start = std::chrono::system_clock::now();
                 // glRotatef(((std::chrono::system_clock::now() - start).count() / 1000000) % 360, 0, 0, 1);
 
-                RGBColor(255, 255, 255);
                 glBegin(GL_LINES);
                 {
                     const int STEPS = 180;
                     const float UNIT_OF_THETA = 2 * M_PI / 180;
-                    const float LENGTH = 7.5f;
+                    RGBColor(255, 255, 255);
                     for (int i = 0; i < 180; i++) {
                         const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
                         const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);
