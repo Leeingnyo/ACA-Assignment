@@ -225,8 +225,11 @@ int main (int argc, char* argv[]) {
                 m.orientations[0] = global_orientation * m.orientations[0];
                 global_position = m.position;
                 global_orientation = m.orientations[0];
-                auto angle = global_orientation.toRotationMatrix().eulerAngles(1, 0, 2)(0);
+
                 character_state.previous_motion = m;
+                if (character_state.current_motion != next_motion) {
+                    std::cout << "Motion Changed: current motion is '" << next_motion->name << "'" << std::endl;
+                }
                 character_state.current_motion = next_motion;
                 if (character_state.is_busy) {
                     next_motion = character_state.next_motion;
@@ -237,7 +240,6 @@ int main (int argc, char* argv[]) {
                 }
                 starttime = current;
                 current_frame = 0;
-                std::cout << "Motion Changed: current motion is '" << character_state.current_motion->name << "'" << std::endl;
             }
 
             offset = character_state.current_motion->start;
