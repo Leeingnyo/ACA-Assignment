@@ -17,11 +17,10 @@ public:
 
     Motion& operator=(const Motion& rhs) {
         if (this != &rhs) {
-            if (!(orientations.size() == rhs.orientations.size()))
-                throw std::runtime_error("dimensions are not same.");
             position = rhs.position;
             orientations = rhs.orientations;
         }
+        return *this;
     }
 
     Motion operator+(const Displacement& d) const;
@@ -42,6 +41,7 @@ public:
 
     Displacement operator*(double alpha) const {
         Displacement d;
+        // 이런 건 map 인가 쓰면 더 빠른가
         for (int i = 0; i < vectors.size(); i++) {
             d.vectors.push_back(vectors[i] * alpha);
         }
@@ -49,7 +49,6 @@ public:
     }
 
     Displacement operator-() const {
-        // 이런 건 map 인가 쓰면 더 빠른가
         return *this * -1;
     }
 

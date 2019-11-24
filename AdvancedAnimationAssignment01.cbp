@@ -24,6 +24,7 @@
 				<Option projectLinkerOptionsRelation="0" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-static -static-libgcc -static-libstdc++" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -75,6 +76,7 @@
 		<Unit filename="kinematics/root-joint/root-joint.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="motions/motion-clip.hpp" />
+		<Unit filename="motions/motion.cpp" />
 		<Unit filename="motions/motion.hpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />

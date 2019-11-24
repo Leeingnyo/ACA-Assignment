@@ -41,6 +41,24 @@
 #define __int64 long long
 #endif // __WIN32
 
+std::shared_ptr<RootJoint> load_motion(inyong_bvh::BvhParser& parser, const char* filename) {
+    std::ifstream bvh_file(filename);
+    std::string file_content;
+    if (bvh_file.is_open()) {
+        std::stringstream string_stream;
+        string_stream << bvh_file.rdbuf();
+        file_content = string_stream.str();
+        bvh_file.close();
+        auto&& bvh_tokens = parser.scan_from_string(file_content);
+        auto&& bvh = parser.parse_from_tokens(bvh_tokens);
+        std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
+        return std::dynamic_pointer_cast<RootJoint>(bvh_kinematics);
+    } else {
+        std::cout << "Can't open the file \"" << filename << "\"" << std::endl;
+        return nullptr;
+    }
+}
+
 int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
@@ -76,66 +94,19 @@ int main (int argc, char* argv[]) {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
-    /*
-    if (argc <= 1) {
-        std::cout << "Please give bvh file path as the first argument" << std::endl;
-        return -1;
-    }
-    std::ifstream bvh_file(argv[1]);
-    */
-
-    /*
-    Motion motion1;
-    motion1.position = Eigen::Vector3d{0, 0, 0};
-    motion1.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1))));
-    std::cout << "motion1" << std::endl;
-    std::cout << motion1.position << std::endl;
-    std::cout << (motion1.orientations[0]).toRotationMatrix() << std::endl;
-
-    Motion motion2;
-    motion2.position = Eigen::Vector3d{10, 0, 0};
-    motion2.orientations.push_back(Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))));
-    std::cout << "motion2" << std::endl;
-    std::cout << motion2.position << std::endl;
-    std::cout << (motion2.orientations[0]).toRotationMatrix() << std::endl;
-
-    Displacement d = motion1 - motion2;
-    std::cout << "d = m1 - m2" << std::endl;
-    std::cout << d.vectors[0] << std::endl;
-    std::cout << Eigen::AngleAxisd(d.vectors[1].norm(), d.vectors[1].normalized()).toRotationMatrix() << std::endl;
-
-    Motion motion3 = motion2 + d;
-    std::cout << "motion3 = m2 + d = m2 + (m1 - m2) = m1" << std::endl;
-    std::cout << motion3.position << std::endl;
-    std::cout << (motion3.orientations[0]).toRotationMatrix() << std::endl;
-
-    Displacement d2 = motion2 - motion1;
-    Motion motion4 = motion1 + d2;
-    std::cout << "motion4 = m1 + d2 = m1 - (m2 - m1) = m2" << std::endl;
-    std::cout << motion4.position << std::endl;
-    std::cout << (motion4.orientations[0]).toRotationMatrix() << std::endl;
-    */
-
-    std::ifstream bvh_file("Trial001.bvh");
-    std::string file_content;
-    if (bvh_file.is_open()) {
-        std::stringstream string_stream;
-        string_stream << bvh_file.rdbuf();
-        file_content = string_stream.str();
-        bvh_file.close();
-    } else {
-        std::cout << "Can't open the file" << std::endl;
-        return -2;
-    }
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
-    auto bvh_tokens = parser.scan_from_string(file_content);
-    auto bvh = parser.parse_from_tokens(bvh_tokens);
-    std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
-    std::shared_ptr<RootJoint> root = std::dynamic_pointer_cast<RootJoint>(bvh_kinematics);
 
-    std::cout << root->motion_clip.motions.size() << std::endl;
+    std::shared_ptr<RootJoint> root;
+    std::shared_ptr<RootJoint> walk = load_motion(parser, "walk.bvh");
+    std::shared_ptr<RootJoint> turn_left = load_motion(parser, "turn_left.bvh");
+
+    const int walk_frame = walk->motion_clip.motions.size();
+    const int turn_left_frame = turn_left->motion_clip.motions.size();
+    const int total_frame = walk_frame + turn_left_frame;
 
     auto starttime = std::chrono::system_clock::now();
+
+    Displacement global = walk->motion_clip.motions[0] - walk->motion_clip.motions[0];
 
     while (!glfwWindowShouldClose(window)) {
         // Render here
@@ -149,7 +120,31 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
+            Displacement d;
+            int current_frame_total = (int)(delta_milli / walk->frame_time / 1000) % total_frame;
+            int current_frame_this_clip;
+            Motion m;
+            if (current_frame_total < turn_left_frame) {
+                root = turn_left;
+                current_frame_this_clip = current_frame_total;
+                m = root->motion_clip.motions[current_frame_this_clip];
+            } else {
+                root = walk;
+                current_frame_this_clip = current_frame_total - turn_left_frame;
+                auto& endA = turn_left->motion_clip.motions.back();
+                auto& startB = walk->motion_clip.motions[0];
+                m = root->motion_clip.motions[current_frame_this_clip];
+                m.position = endA.orientations[0] * (m.position - startB.position) + endA.position;
+                m.orientations[0] = endA.orientations[0] * m.orientations[0];
+                auto startB_positioned = startB;
+                startB_positioned.position = endA.orientations[0] * (startB_positioned.position - startB.position) + endA.position;
+                startB_positioned.orientations[0] = endA.orientations[0] * startB_positioned.orientations[0];
+                double N = 30.0;
+                d = (endA - startB_positioned) *
+                    (current_frame_this_clip < N ? (std::cos(M_PI / N * current_frame_this_clip) + 1) / 2.0 : 0);
+                m = m + d;
+            }
+            root->animate_with(m);
         }
 
         { // projection
