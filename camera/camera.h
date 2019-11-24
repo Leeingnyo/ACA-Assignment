@@ -2,7 +2,7 @@
 
 #include "../glm/glm.hpp"
 
-#define TRANSLATION_UNIT (0.01f)
+#define TRANSLATION_UNIT (0.1f)
 
 class Camera {
 private:

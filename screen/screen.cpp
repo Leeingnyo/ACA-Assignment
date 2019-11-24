@@ -74,19 +74,19 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
     } else {
         is_shift = false;
     }
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveUp();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveUp();
     }
-    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveLeft();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveLeft();
     }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveDown();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveDown();
     }
-    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveRight();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
     }

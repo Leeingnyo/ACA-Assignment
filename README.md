@@ -73,7 +73,7 @@ The default scene is the scene 3.
 ### Interfaces
 
 Drag the screen with your mouse to rotate the camera view.
-You can use 'WASD' keys for moving the focus of camera.
+You can use arrow keys for moving the focus of camera.
 You can zoom in and out the screen by scrolling with shift key.
 
 Press the 'space bar' key to stop the motion. To resume, press it again.
