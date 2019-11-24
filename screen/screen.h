@@ -2,6 +2,8 @@
 
 #include "../motions/motion.hpp"
 
+class CharacterState;
+
 class Screen {
 private:
     Camera camera;
@@ -18,7 +20,9 @@ private:
     double prev_z;
 public:
     static Screen* current_screen;
+    static CharacterState* character_state;
     static Motion const * m;
+    bool is_busy;
 
     Screen() : camera() {
     }

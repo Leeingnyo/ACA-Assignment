@@ -36,6 +36,9 @@
 #include "inverse-kinematics/inverse-kinematics.h"
 
 #include "motions/motion.hpp"
+#include "motions/motion-pack.hpp"
+
+#include "character-state.hpp"
 
 #ifndef __WIN32
 #define __int64 long long
@@ -58,22 +61,6 @@ std::shared_ptr<RootJoint> load_motion(inyong_bvh::BvhParser& parser, const char
         return nullptr;
     }
 }
-
-class MotionPack {
-public:
-    MotionClip const * motion_clip;
-    std::string name;
-    int start;
-    int length;
-    int blend;
-    MotionPack const * default_next;
-
-    MotionPack(std::string name, int start, int end, int blend, MotionClip* motion_clip) :
-            name(name), start(start), blend(blend), motion_clip(motion_clip) {
-        length = end - start;
-        default_next = this;
-    }
-};
 
 int main (int argc, char* argv[]) {
     GLFWwindow* window;
@@ -160,18 +147,40 @@ int main (int argc, char* argv[]) {
             p_run_veer_left.default_next =
             p_run_veer_right.default_next = &p_run;
 
-    Motion previous_motion;
+    static CharacterState character_state;
+    screen.character_state = &character_state;
+    character_state.previous_motion = p_stand.motion_clip->motions.back();
 
-    MotionPack const * current_motion;
-    MotionPack const * next_motion;
-    previous_motion = p_stand.motion_clip->motions.back();
-    current_motion = &p_stand;
-    next_motion = &p_forward_jump;
+    for (State s : std::vector<State>{State::CS_STAND, State::CS_WALK, State::CS_RUN}) {
+        for (char c : std::vector<char>{'W', 'Q', 'A', 'S', 'D', 'E', 'X', ' '}) {
+            character_state.input_map[s][c] = std::pair<MotionPack const *, State>(nullptr, s);
+        }
+    }
+    character_state.input_map[State::CS_STAND]['W'] = std::pair<MotionPack const *, State>(&p_walk_start, State::CS_WALK);
+    character_state.input_map[State::CS_STAND]['X'] = std::pair<MotionPack const *, State>(&p_jump, State::CS_STAND);
+    character_state.input_map[State::CS_STAND][' '] = std::pair<MotionPack const *, State>(&p_forward_jump, State::CS_STAND);
+
+    character_state.input_map[State::CS_WALK]['W'] = std::pair<MotionPack const *, State>(&p_run, State::CS_RUN);
+    character_state.input_map[State::CS_WALK]['Q'] = std::pair<MotionPack const *, State>(&p_veer_left, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['A'] = std::pair<MotionPack const *, State>(&p_turn_left, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['S'] = std::pair<MotionPack const *, State>(&p_walk_stop, State::CS_STAND);
+    character_state.input_map[State::CS_WALK]['D'] = std::pair<MotionPack const *, State>(&p_turn_right, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['E'] = std::pair<MotionPack const *, State>(&p_veer_right, State::CS_WALK);
+
+    character_state.input_map[State::CS_RUN]['Q'] = std::pair<MotionPack const *, State>(&p_run_veer_left, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['A'] = std::pair<MotionPack const *, State>(&p_run_left, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['S'] = std::pair<MotionPack const *, State>(&p_walk, State::CS_WALK);
+    character_state.input_map[State::CS_RUN]['D'] = std::pair<MotionPack const *, State>(&p_run_right, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['E'] = std::pair<MotionPack const *, State>(&p_run_veer_right, State::CS_RUN);
+
+    character_state.current_motion = &p_stand;
+    character_state.next_motion = nullptr;
+    MotionPack const *next_motion = &p_stand;
     // get default next function
     // stand -> stand, walk -> walk straight, run -> run straight
 
-    Eigen::Vector3d global_position = previous_motion.position;
-    Eigen::Quaterniond global_orientation = previous_motion.orientations[0];
+    Eigen::Vector3d global_position = character_state.previous_motion.position;
+    Eigen::Quaterniond global_orientation = character_state.previous_motion.orientations[0];
 
     auto starttime = std::chrono::system_clock::now();
 
@@ -190,37 +199,42 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            int current_frame = (int)(delta_milli / current_motion->motion_clip->frame_time / 1000);
-            int total_frame = current_motion->length;
-            int offset = current_motion->start;
+            int current_frame = (int)(delta_milli / character_state.current_motion->motion_clip->frame_time / 1000);
+            int total_frame = character_state.current_motion->length;
+            int offset = character_state.current_motion->start;
 
             if (current_frame < total_frame) {
             } else {
-                Motion m = current_motion->motion_clip->motions[current_frame + offset - 1];
-                m.position = global_orientation * (m.position - current_motion->motion_clip->motions[offset].position) + global_position;
+                Motion m = character_state.current_motion->motion_clip->motions[current_frame + offset - 1];
+                m.position = global_orientation * (m.position - character_state.current_motion->motion_clip->motions[offset].position) + global_position;
                 m.orientations[0] = global_orientation * m.orientations[0];
                 global_position = m.position;
                 global_orientation = m.orientations[0];
                 auto angle = global_orientation.toRotationMatrix().eulerAngles(1, 0, 2)(0);
-
-                previous_motion = m;
-                current_motion = next_motion;
-                next_motion = current_motion->default_next;
+                character_state.previous_motion = m;
+                character_state.current_motion = next_motion;
+                if (character_state.is_busy) {
+                    next_motion = character_state.next_motion;
+                    character_state.next_motion = nullptr;
+                    character_state.is_busy = false;
+                } else {
+                    next_motion = next_motion->default_next;
+                }
                 starttime = current;
                 current_frame = 0;
-                std::cout << "Motion Changed: current motion is '" << current_motion->name << "'" << std::endl;
+                std::cout << "Motion Changed: current motion is '" << character_state.current_motion->name << "'" << std::endl;
             }
 
-            offset = current_motion->start;
-            m = current_motion->motion_clip->motions[current_frame + offset];
-            Motion current_motion_start = current_motion->motion_clip->motions[offset];
+            offset = character_state.current_motion->start;
+            m = character_state.current_motion->motion_clip->motions[current_frame + offset];
+            Motion current_motion_start = character_state.current_motion->motion_clip->motions[offset];
             m.position = global_orientation * (m.position - current_motion_start.position) + global_position;
             m.orientations[0] = global_orientation * m.orientations[0];
             current_motion_start.position = global_orientation * (current_motion_start.position - current_motion_start.position) + global_position;
             current_motion_start.orientations[0] = global_orientation * current_motion_start.orientations[0];
-            if (current_frame < current_motion->blend) {
-                Displacement d = (previous_motion - current_motion_start) *
-                        ((std::cos(M_PI / current_motion->blend * current_frame) + 1) / 2.0);
+            if (current_frame < character_state.current_motion->blend) {
+                Displacement d = (character_state.previous_motion - current_motion_start) *
+                        ((std::cos(M_PI / character_state.current_motion->blend * current_frame) + 1) / 2.0);
                 m = m + d;
             }
 

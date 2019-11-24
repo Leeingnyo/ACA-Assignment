@@ -7,9 +7,11 @@
 #include "../glm/gtc/quaternion.hpp"
 #include "../glm/gtx/quaternion.hpp"
 
+#include "../character-state.hpp"
 #include "screen.h"
 
 Screen* Screen::current_screen;
+CharacterState* Screen::character_state;
 Motion const * Screen::m;
 
 void Screen::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -89,6 +91,33 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveRight();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
+    }
+
+    if (!character_state->is_busy) {
+        if (key == GLFW_KEY_W && (action == GLFW_PRESS)) {
+            character_state->input('W');
+        }
+        if (key == GLFW_KEY_Q && (action == GLFW_PRESS)) {
+            character_state->input('Q');
+        }
+        if (key == GLFW_KEY_A && (action == GLFW_PRESS)) {
+            character_state->input('A');
+        }
+        if (key == GLFW_KEY_S && (action == GLFW_PRESS)) {
+            character_state->input('S');
+        }
+        if (key == GLFW_KEY_D && (action == GLFW_PRESS)) {
+            character_state->input('D');
+        }
+        if (key == GLFW_KEY_E && (action == GLFW_PRESS)) {
+            character_state->input('E');
+        }
+        if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS)) {
+            character_state->input(' ');
+        }
+        if (key == GLFW_KEY_X && (action == GLFW_PRESS)) {
+            character_state->input('X');
+        }
     }
 
     if (key == GLFW_KEY_P && (action == GLFW_PRESS)) {
