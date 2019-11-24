@@ -147,12 +147,12 @@ void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
             camera.getOrigin() + (float)yoffset * v * 0.1f
         );
     }
-    /*
     else {
-        fov -= yoffset * 0.5;
-        fov = Clamp(fov, 5, 60);
+        glm::vec3 v = glm::normalize(camera.getOrigin() - camera.getEye());
+        camera.setEye(
+            camera.getEye() + (float)yoffset * v * 0.1f
+        );
     }
-    */
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
