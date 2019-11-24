@@ -22,6 +22,9 @@ public:
     void setEye(const glm::vec3& eye) {
         this->eye = eye;
     }
+    void setOrigin(const glm::vec3& origin) {
+        this->ori = origin;
+    }
     void setUp(const glm::vec3& up) {
         this->up = up;
     }

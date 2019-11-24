@@ -10,6 +10,7 @@
 #include "screen.h"
 
 Screen* Screen::current_screen;
+Motion const * Screen::m;
 
 void Screen::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     if (!is_mouse_left_clicked){
@@ -89,6 +90,22 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
         camera.moveRight();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
     }
+
+    if (key == GLFW_KEY_P && (action == GLFW_PRESS)) {
+        camera.setEye(
+                    glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f - (camera.getOrigin() - camera.getEye())
+        );
+        camera.setOrigin(
+                    glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f
+        );
+        std::cout << "Scene: " << "move camera to player" << std::endl;
+    }
+    if (key == GLFW_KEY_T && (action == GLFW_PRESS)) {
+        if (is_fixed) {
+        }
+        is_fixed = !is_fixed;
+        std::cout << "Scene: " << (is_fixed ? "camera fixed" : "camera unfixed") << std::endl;
+    }
 }
 
 void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -96,6 +113,9 @@ void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         glm::vec3 v = glm::normalize(camera.getOrigin() - camera.getEye());
         camera.setEye(
             camera.getEye() + (float)yoffset * v * 0.1f
+        );
+        camera.setOrigin(
+            camera.getOrigin() + (float)yoffset * v * 0.1f
         );
     }
     /*

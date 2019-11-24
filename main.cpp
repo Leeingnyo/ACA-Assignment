@@ -182,7 +182,8 @@ int main (int argc, char* argv[]) {
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Motion m;
+        static Motion m;
+        screen.m = &m;
 
         { // animate
             auto current = std::chrono::system_clock::now();
@@ -232,30 +233,18 @@ int main (int argc, char* argv[]) {
             gluPerspective(Screen::current_screen->getCamera().getFov(),
                     Screen::current_screen->getAspect(), 0.1f, 100.0f);
 
-            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
-            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
-            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
-            auto& fixed = m.position;
+            const glm::vec3& eye = Screen::current_screen->getEye();
+            const glm::vec3& ori = Screen::current_screen->getOrigin();
+            const glm::vec3& up = Screen::current_screen->getUp();
             gluLookAt(
-                eye.x + fixed(0) * 0.1f,
-                eye.y + fixed(1) * 0.1f,
-                eye.z + fixed(2) * 0.1f,
-                ori.x + fixed(0) * 0.1f,
-                ori.y + fixed(1) * 0.1f,
-                ori.z + fixed(2) * 0.1f,
+                eye.x,
+                eye.y,
+                eye.z,
+                ori.x,
+                ori.y,
+                ori.z,
                 up.x, up.y, up.z
             );
-            /*
-            gluLookAt(
-                eye.x,// + fixed(0) * 0.1f,
-                eye.y,// + fixed(1) * 0.1f,
-                eye.z,// + fixed(2) * 0.1f,
-                ori.x,// + fixed(0) * 0.1f,
-                ori.y,// + fixed(1) * 0.1f,
-                ori.z,// + fixed(2) * 0.1f,
-                up.x, up.y, up.z
-            );
-            */
         }
 
         { // display
@@ -317,11 +306,11 @@ int main (int argc, char* argv[]) {
             glPushMatrix();
             { // display object independently of camera
                 const float LENGTH = 7.5f;
-                const auto& origin = Screen::current_screen->getCamera().getOrigin();
+                const auto& origin = Screen::current_screen->getOrigin();
                 glTranslatef(
-                    origin.x + m.position(0) * 0.1f,
-                    origin.y + m.position(1) * 0.1f,
-                    origin.z + m.position(2) * 0.1f
+                    origin.x,
+                    origin.y,
+                    origin.z
                 );
 
                 glBegin(GL_LINES);
@@ -339,9 +328,9 @@ int main (int argc, char* argv[]) {
                 glEnd();
 
                 GLfloat matrix[16];
-                getRotation(matrix, Screen::current_screen->getCamera().getEye() -
-                        Screen::current_screen->getCamera().getOrigin(),
-                        Screen::current_screen->getCamera().getUp());
+                getRotation(matrix, Screen::current_screen->getEye() -
+                        Screen::current_screen->getOrigin(),
+                        Screen::current_screen->getUp());
                 glMultMatrixf(matrix);
 
 
