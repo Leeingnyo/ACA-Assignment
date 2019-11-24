@@ -59,6 +59,21 @@ std::shared_ptr<RootJoint> load_motion(inyong_bvh::BvhParser& parser, const char
     }
 }
 
+class MotionPack {
+public:
+    MotionClip* motion_clip;
+    std::string name;
+    int start;
+    int length;
+    int blend;
+    MotionPack* default_next;
+
+    MotionPack(std::string name, int start, int end, int blend, MotionClip* motion_clip) :
+            name(name), start(start), blend(blend), motion_clip(motion_clip) {
+        length = end - start;
+    }
+};
+
 int main (int argc, char* argv[]) {
     GLFWwindow* window;
     Screen screen = Screen();
@@ -96,17 +111,33 @@ int main (int argc, char* argv[]) {
 
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
 
-    std::shared_ptr<RootJoint> root;
-    std::shared_ptr<RootJoint> walk = load_motion(parser, "walk.bvh");
-    std::shared_ptr<RootJoint> turn_left = load_motion(parser, "turn_left.bvh");
+    std::shared_ptr<RootJoint> root = load_motion(parser, "motion-data/stand.bvh");
+    std::shared_ptr<RootJoint> stand = load_motion(parser, "motion-data/stand.bvh");
+    std::shared_ptr<RootJoint> turn_left = load_motion(parser, "motion-data/turn_left.bvh");
+    std::shared_ptr<RootJoint> walk = load_motion(parser, "motion-data/walk.bvh");
 
-    const int walk_frame = walk->motion_clip.motions.size();
-    const int turn_left_frame = turn_left->motion_clip.motions.size();
-    const int total_frame = walk_frame + turn_left_frame;
+    MotionPack p_stand("stand", 0, 20, 20, &stand->motion_clip);
+    MotionPack p_walk("walk", 0, 35, 20, &walk->motion_clip);
+    MotionPack p_turn_left("turn left", 53, 117, 20, &turn_left->motion_clip);
+
+    p_stand.default_next = &p_stand;
+    p_walk.default_next = &p_turn_left;
+    p_turn_left.default_next = &p_walk;
+
+    Motion previous_motion;
+
+    MotionPack const * current_motion;
+    MotionPack const * next_motion;
+    previous_motion = p_stand.motion_clip->motions.back();
+    current_motion = &p_stand;
+    next_motion = &p_turn_left;
+    // get default next function
+    // stand -> stand, walk -> walk straight, run -> run straight
+
+    Eigen::Vector3d global_position = previous_motion.position;
+    Eigen::Quaterniond global_orientation = previous_motion.orientations[0];
 
     auto starttime = std::chrono::system_clock::now();
-
-    Displacement global = walk->motion_clip.motions[0] - walk->motion_clip.motions[0];
 
     while (!glfwWindowShouldClose(window)) {
         // Render here
@@ -120,30 +151,38 @@ int main (int argc, char* argv[]) {
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            Displacement d;
-            int current_frame_total = (int)(delta_milli / walk->frame_time / 1000) % total_frame;
-            int current_frame_this_clip;
-            Motion m;
-            if (current_frame_total < turn_left_frame) {
-                root = turn_left;
-                current_frame_this_clip = current_frame_total;
-                m = root->motion_clip.motions[current_frame_this_clip];
+            int total_frame = current_motion->length;
+            int current_frame = (int)(delta_milli / current_motion->motion_clip->frame_time / 1000);
+            int offset = current_motion->start;
+
+            if (current_frame < total_frame) {
             } else {
-                root = walk;
-                current_frame_this_clip = current_frame_total - turn_left_frame;
-                auto& endA = turn_left->motion_clip.motions.back();
-                auto& startB = walk->motion_clip.motions[0];
-                m = root->motion_clip.motions[current_frame_this_clip];
-                m.position = endA.orientations[0] * (m.position - startB.position) + endA.position;
-                m.orientations[0] = endA.orientations[0] * m.orientations[0];
-                auto startB_positioned = startB;
-                startB_positioned.position = endA.orientations[0] * (startB_positioned.position - startB.position) + endA.position;
-                startB_positioned.orientations[0] = endA.orientations[0] * startB_positioned.orientations[0];
-                double N = 30.0;
-                d = (endA - startB_positioned) *
-                    (current_frame_this_clip < N ? (std::cos(M_PI / N * current_frame_this_clip) + 1) / 2.0 : 0);
+                Motion m = current_motion->motion_clip->motions[current_frame + offset - 1];
+                m.position = global_orientation * (m.position - current_motion->motion_clip->motions[offset].position) + global_position;
+                m.orientations[0] = global_orientation * m.orientations[0];
+                global_position = m.position;
+                global_orientation = m.orientations[0];
+                auto angle = global_orientation.toRotationMatrix().eulerAngles(1, 0, 2)(0);
+
+                previous_motion = m;
+                current_motion = next_motion;
+                next_motion = current_motion->default_next;
+                starttime = current;
+                current_frame = 0;
+            }
+
+            Motion m = current_motion->motion_clip->motions[current_frame + offset];
+            Motion current_motion_start = current_motion->motion_clip->motions[offset];
+            m.position = global_orientation * (m.position - current_motion_start.position) + global_position;
+            m.orientations[0] = global_orientation * m.orientations[0];
+            current_motion_start.position = global_orientation * (current_motion_start.position - current_motion_start.position) + global_position;
+            current_motion_start.orientations[0] = global_orientation * current_motion_start.orientations[0];
+            if (current_frame < current_motion->blend) {
+                Displacement d = (previous_motion - current_motion_start) *
+                        ((std::cos(M_PI / current_motion->blend * current_frame) + 1) / 2.0);
                 m = m + d;
             }
+
             root->animate_with(m);
         }
 
