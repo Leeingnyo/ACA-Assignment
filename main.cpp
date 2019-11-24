@@ -126,6 +126,8 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<RootJoint> run_right = load_motion(parser, "motion-data/run_right.bvh");
     std::shared_ptr<RootJoint> run_veer_left = load_motion(parser, "motion-data/run_veer_left.bvh");
     std::shared_ptr<RootJoint> run_veer_right = load_motion(parser, "motion-data/run_veer_right.bvh");
+    std::shared_ptr<RootJoint> jump = load_motion(parser, "motion-data/jump.bvh");
+    std::shared_ptr<RootJoint> forward_jump = load_motion(parser, "motion-data/stand-jump.bvh");
     // motion data
 
     MotionPack p_stand("stand", 0, 20, 19, &stand->motion_clip);
@@ -134,31 +136,37 @@ int main (int argc, char* argv[]) {
     MotionPack p_turn_right("turn right", 38, 78, 20, &turn_right->motion_clip);
     MotionPack p_veer_right("veer right", 18, 87, 20, &veer_right->motion_clip);
     MotionPack p_walk("walk", 0, 35, 20, &walk->motion_clip);
-    MotionPack p_walk_start("walk start", 2, 27, 20, &walk_start->motion_clip);
+    MotionPack p_walk_start("walk start", 2, 61, 40, &walk_start->motion_clip);
     MotionPack p_walk_stop("walk stop", 22, 64, 20, &walk_stop->motion_clip);
     MotionPack p_run("run", 1, 25, 25, &run->motion_clip);
     MotionPack p_run_left("run left", 8, 28, 20, &run_left->motion_clip);
     MotionPack p_run_right("run right", 20, 38, 20, &run_right->motion_clip);
-    MotionPack p_run_veer_left("run veer left", 9, 33, 20, &run_veer_left->motion_clip);
-    MotionPack p_run_veer_right("run veer right", 8, 30, 20, &run_veer_right->motion_clip);
+    MotionPack p_run_veer_left("run veer left", 10, 32, 20, &run_veer_left->motion_clip);
+    MotionPack p_run_veer_right("run veer right", 9, 29, 20, &run_veer_right->motion_clip);
+    MotionPack p_jump("jump", 0, 116, 20, &jump->motion_clip);
+    MotionPack p_forward_jump("forward jump", 0, 73, 20, &forward_jump->motion_clip);
     // wrap motions
 
-    p_walk.default_next = &p_walk;
-    p_turn_left.default_next = &p_walk;
-    p_turn_right.default_next = &p_walk;
-    p_walk_start.default_next = &p_walk;
-    p_walk_stop.default_next = &p_stand;
-
-    p_run.default_next = &p_run_right;
-    p_run_right.default_next = &p_run;
+    p_walk_start.default_next =
+            p_veer_left.default_next =
+            p_veer_right.default_next =
+            p_turn_left.default_next =
+            p_turn_right.default_next = &p_walk;
+    p_walk_stop.default_next =
+            p_jump.default_next =
+            p_forward_jump.default_next = &p_stand;
+    p_run_left.default_next =
+            p_run_right.default_next =
+            p_run_veer_left.default_next =
+            p_run_veer_right.default_next = &p_run;
 
     Motion previous_motion;
 
     MotionPack const * current_motion;
     MotionPack const * next_motion;
     previous_motion = p_stand.motion_clip->motions.back();
-    current_motion = &p_run;
-    next_motion = &p_run_right;
+    current_motion = &p_stand;
+    next_motion = &p_forward_jump;
     // get default next function
     // stand -> stand, walk -> walk straight, run -> run straight
 
@@ -237,6 +245,17 @@ int main (int argc, char* argv[]) {
                 ori.z + fixed(2) * 0.1f,
                 up.x, up.y, up.z
             );
+            /*
+            gluLookAt(
+                eye.x,// + fixed(0) * 0.1f,
+                eye.y,// + fixed(1) * 0.1f,
+                eye.z,// + fixed(2) * 0.1f,
+                ori.x,// + fixed(0) * 0.1f,
+                ori.y,// + fixed(1) * 0.1f,
+                ori.z,// + fixed(2) * 0.1f,
+                up.x, up.y, up.z
+            );
+            */
         }
 
         { // display
