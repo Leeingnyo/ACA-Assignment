@@ -116,12 +116,22 @@ int main (int argc, char* argv[]) {
     std::shared_ptr<RootJoint> run_veer_right = load_motion(parser, "motion-data/run_veer_right.bvh");
     std::shared_ptr<RootJoint> jump = load_motion(parser, "motion-data/jump.bvh");
     std::shared_ptr<RootJoint> forward_jump = load_motion(parser, "motion-data/stand-jump.bvh");
+    std::shared_ptr<RootJoint> running_stop = load_motion(parser, "motion-data/sudden-stop.bvh");
 
     // from mrl
     std::shared_ptr<RootJoint> turn_backward = load_motion(parser, "motion-data/turn-backward.bvh");
+    std::shared_ptr<RootJoint> trial001 = load_motion(parser, "motion-data/Trial001.bvh");
     {
         const auto look_toward = Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
         for (Motion& motion : turn_backward->motion_clip.motions) {
+            motion.position = look_toward * motion.position;
+            motion.orientations[0] = motion.orientations[0] * look_toward;
+        }
+    }
+    {
+        const auto look_toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+        for (Motion& motion : trial001->motion_clip.motions) {
+            motion.position = look_toward * motion.position;
             motion.orientations[0] = motion.orientations[0] * look_toward;
         }
     }
@@ -142,8 +152,10 @@ int main (int argc, char* argv[]) {
     MotionPack p_run_veer_right("run veer right", 9, 29, 20, &run_veer_right->motion_clip);
     MotionPack p_jump("jump", 0, 116, 20, &jump->motion_clip);
     MotionPack p_forward_jump("forward jump", 0, 73, 20, &forward_jump->motion_clip);
+    MotionPack p_sudden_stop("sudden stop", 16, 59, 20, &running_stop->motion_clip);
 
     MotionPack p_turn_backward("turn backward", 250, 320, 30, &turn_backward->motion_clip);
+    MotionPack p_avoid("avoid", 430, 570, 40, &trial001->motion_clip);
     // wrap motions
 
     p_walk_start.default_next =
@@ -152,6 +164,7 @@ int main (int argc, char* argv[]) {
             p_turn_left.default_next =
             p_turn_right.default_next = &p_walk;
     p_walk_stop.default_next =
+            p_avoid.default_next =
             p_turn_backward.default_next =
             p_jump.default_next =
             p_forward_jump.default_next = &p_stand;
@@ -159,6 +172,7 @@ int main (int argc, char* argv[]) {
             p_run_right.default_next =
             p_run_veer_left.default_next =
             p_run_veer_right.default_next = &p_run;
+    p_sudden_stop.default_next = &p_avoid;
 
     static CharacterState character_state;
     screen.character_state = &character_state;
@@ -186,6 +200,7 @@ int main (int argc, char* argv[]) {
     character_state.input_map[State::CS_RUN]['S'] = std::pair<MotionPack const *, State>(&p_walk, State::CS_WALK);
     character_state.input_map[State::CS_RUN]['D'] = std::pair<MotionPack const *, State>(&p_run_right, State::CS_RUN);
     character_state.input_map[State::CS_RUN]['E'] = std::pair<MotionPack const *, State>(&p_run_veer_right, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['X'] = std::pair<MotionPack const *, State>(&p_sudden_stop, State::CS_STAND);
     // input mapping
 
     character_state.current_motion = &p_stand;
