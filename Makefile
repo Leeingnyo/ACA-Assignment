@@ -1,11 +1,15 @@
 run: all
 	./bin/AdvancedAnimationAssignment01
 
+clean:
+	rm -rf obj/ *.o bin/
+
 all: obj/main.o obj/screen/screen.o obj/kinematics/human/human.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/open-gl-hinge/open-gl-hinge.o \
 		obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/root-joint/root-joint.o  \
 		obj/kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.o obj/geomatric-primitives/sphere.o obj/geomatric-primitives/cylinder.o \
 		obj/geomatric-primitives/cuboid.o obj/geomatric-primitives/common.o \
-		obj/bvh-parser/bvh-parser.o obj/inverse-kinematics/inverse-kinematics.o
+		obj/bvh-parser/bvh-parser.o obj/inverse-kinematics/inverse-kinematics.o \
+		obj/motions/motion.o obj/character-state.o
 	mkdir -p bin
 	g++ -o bin/AdvancedAnimationAssignment01 obj/main.o \
 		obj/screen/screen.o \
@@ -22,6 +26,7 @@ all: obj/main.o obj/screen/screen.o obj/kinematics/human/human.o obj/kinematics/
 		obj/geomatric-primitives/common.o \
 		obj/bvh-parser/bvh-parser.o \
 		obj/inverse-kinematics/inverse-kinematics.o \
+		obj/motions/motion.o obj/character-state.o \
 		-lm -lGL -lGLU -lglfw3 -lpthread -lX11 -ldl
 
 obj/inverse-kinematics/inverse-kinematics.o: inverse-kinematics/inverse-kinematics.cpp inverse-kinematics/inverse-kinematics.h kinematics/euler-joint/euler-joint.hpp
@@ -48,7 +53,7 @@ obj/geomatric-primitives/sphere.o: obj/geomatric-primitives/common.o geomatric-p
 	mkdir -p obj/geomatric-primitives
 	g++ -Wall -O2 -c geomatric-primitives/sphere.cpp -o obj/geomatric-primitives/sphere.o
 
-obj/kinematics/bvh-to-kinematics/bvh-to-kinematics.o: obj/bvh-parser/bvh-parser.o obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/root-joint/root-joint.o kinematics/bvh-to-kinematics/bvh-to-kinematics.cpp kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp
+obj/kinematics/bvh-to-kinematics/bvh-to-kinematics.o: obj/bvh-parser/bvh-parser.o obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/root-joint/root-joint.o kinematics/bvh-to-kinematics/bvh-to-kinematics.cpp kinematics/bvh-to-kinematics/bvh-to-kinematics.hpp motions/motion-clip.hpp
 	mkdir -p obj/kinematics/bvh-to-kinematics/
 	g++ -Wall -O2 -c kinematics/bvh-to-kinematics/bvh-to-kinematics.cpp -o obj/kinematics/bvh-to-kinematics/bvh-to-kinematics.o
 
@@ -68,7 +73,7 @@ obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o: obj/geomatric-primitiv
 	mkdir -p obj/kinematics/open-gl-euler-joint
 	g++ -Wall -O2 -c kinematics/open-gl-euler-joint/open-gl-euler-joint.cpp -o obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o
 
-obj/kinematics/root-joint/root-joint.o: kinematics/root-joint/root-joint.cpp kinematics/root-joint/root-joint.hpp kinematics/euler-joint/euler-joint.hpp kinematics/joint/joint.hpp kinematics/link/link.hpp kinematics/drawable.hpp
+obj/kinematics/root-joint/root-joint.o: kinematics/root-joint/root-joint.cpp kinematics/root-joint/root-joint.hpp kinematics/euler-joint/euler-joint.hpp kinematics/joint/joint.hpp kinematics/link/link.hpp kinematics/drawable.hpp motions/motion-clip.hpp
 	mkdir -p obj/kinematics/root-joint
 	g++ -Wall -O2 -c kinematics/root-joint/root-joint.cpp -o obj/kinematics/root-joint/root-joint.o
 
@@ -76,11 +81,19 @@ obj/kinematics/human/human.o: obj/kinematics/open-gl-ball-and-socket/open-gl-bal
 	mkdir -p obj/kinematics/human
 	g++ -Wall -O2 -c kinematics/human/human.cpp -o obj/kinematics/human/human.o
 
-obj/screen/screen.o: screen/screen.h
+obj/screen/screen.o: screen/screen.h character-state.hpp
 	mkdir -p obj/screen
 	g++ -Wall -O2 -c screen/screen.cpp -o obj/screen/screen.o
 
-obj/main.o: main.cpp obj/geomatric-primitives/common.o obj/geomatric-primitives/cuboid.o obj/geomatric-primitives/cylinder.o obj/geomatric-primitives/sphere.o obj/kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.o obj/kinematics/open-gl-hinge/open-gl-hinge.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/root-joint/root-joint.o obj/kinematics/human/human.o obj/kinematics/bvh-to-kinematics/bvh-to-kinematics.o camera/camera.h obj/screen/screen.o obj/bvh-parser/bvh-parser.o obj/inverse-kinematics/inverse-kinematics.o
+obj/motions/motion.o: motions/motion.hpp
+	mkdir -p obj/motions
+	g++ -Wall -O2 -c motions/motion.cpp -o obj/motions/motion.o
+
+obj/character-state.o: character-state.hpp
+	mkdir -p obj/screen
+	g++ -Wall -O2 -c character-state.cpp -o obj/character-state.o
+
+obj/main.o: main.cpp obj/geomatric-primitives/common.o obj/geomatric-primitives/cuboid.o obj/geomatric-primitives/cylinder.o obj/geomatric-primitives/sphere.o obj/kinematics/open-gl-ball-and-socket/open-gl-ball-and-socket.o obj/kinematics/open-gl-hinge/open-gl-hinge.o obj/kinematics/open-gl-link/open-gl-link.o obj/kinematics/open-gl-euler-joint/open-gl-euler-joint.o obj/kinematics/root-joint/root-joint.o obj/kinematics/human/human.o obj/kinematics/bvh-to-kinematics/bvh-to-kinematics.o camera/camera.h obj/screen/screen.o obj/bvh-parser/bvh-parser.o obj/inverse-kinematics/inverse-kinematics.o obj/character-state.o motions/motion-pack.hpp
 	mkdir -p obj
 	g++ -Wall -O2 -c main.cpp -o obj/main.o
 
