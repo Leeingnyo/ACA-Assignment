@@ -274,7 +274,7 @@ int main (int argc, char* argv[]) {
             m.orientations[0] = global_orientation * m.orientations[0];
             current_motion_start.position = global_orientation * (current_motion_start.position - current_motion_start.position) + global_position;
             current_motion_start.orientations[0] = global_orientation * current_motion_start.orientations[0];
-            if (current_frame < character_state.current_motion->blend) {
+            if (!Screen::current_screen->is_blend_mode_off && current_frame < character_state.current_motion->blend) {
                 Displacement d = (character_state.previous_motion - current_motion_start) *
                         ((std::cos(M_PI / character_state.current_motion->blend * current_frame) + 1) / 2.0);
                 m = m + d;
