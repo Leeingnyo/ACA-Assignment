@@ -22,7 +22,7 @@ public:
     static Screen* current_screen;
     static CharacterState* character_state;
     static Motion const * m;
-    bool is_busy;
+    bool is_blend_mode_off = false;
 
     Screen() : camera() {
     }

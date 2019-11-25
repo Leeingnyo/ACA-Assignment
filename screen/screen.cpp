@@ -120,6 +120,10 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
         }
     }
 
+    if (key == GLFW_KEY_V && (action == GLFW_PRESS)) {
+        is_blend_mode_off = !is_blend_mode_off;
+        std::cout << (is_blend_mode_off ? "Scene: blend mode disabled" : "Scene: blend mode enabled") << std::endl;
+    }
     if (key == GLFW_KEY_P && (action == GLFW_PRESS)) {
         camera.setEye(
                     glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f - (camera.getOrigin() - camera.getEye())
