@@ -211,6 +211,12 @@ int main (int argc, char* argv[]) {
 
     Eigen::Vector3d global_position = character_state.previous_motion.position;
     Eigen::Quaterniond global_orientation = character_state.previous_motion.orientations[0];
+    {
+        Eigen::AngleAxisd angle = Eigen::AngleAxisd(global_orientation);
+        Eigen::Vector3d axis = angle.axis();
+        axis[0] = axis[2] = 0;
+        global_orientation = Eigen::Quaterniond(Eigen::AngleAxisd(angle.angle(), axis));
+    }
 
     auto starttime = std::chrono::system_clock::now();
 
@@ -240,6 +246,10 @@ int main (int argc, char* argv[]) {
                 m.orientations[0] = global_orientation * m.orientations[0];
                 global_position = m.position;
                 global_orientation = m.orientations[0];
+                Eigen::AngleAxisd angle = Eigen::AngleAxisd(global_orientation);
+                Eigen::Vector3d axis = angle.axis();
+                axis[0] = axis[2] = 0;
+                global_orientation = Eigen::Quaterniond(Eigen::AngleAxisd(angle.angle(), axis));
 
                 character_state.previous_motion = m;
                 if (character_state.current_motion != next_motion) {
