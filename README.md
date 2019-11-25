@@ -63,17 +63,31 @@ make run
 
 #### to controll viewer
 
+##### using mouse
 
+Drag screen to rotate view of camera.
+Scroll to zoom in/out.
+Scroll with shift key to move camera back and forth.
+
+##### using keyboard
+
+| Key | Description |
+| --- | --- |
+| 'T' | bind the camera to the center of character |
+| 'P' | move the camera position to the center of character |
+| 'V' | toggle warping |
+| Arrow Keys | move the camera position |
 
 #### to controll character
 
 | Key \ State | Stand | Walk | Run |
 | --- | --- | --- | --- |
 | 'W' | walk start -> Walk | run -> Run | - |
-| 'Q' | - | turn veer left | |
-| 'A' | - | turn left | |
-| 'S' | turn backward | walk\_stop -> Stand | |
-| 'D' | - | | |
-| 'E' | - | | | 
-| 'X' | jump | | |
-| ' ' | forward jump | | |
+| 'Q' | - | turn veer left | run veer left |
+| 'A' | - | turn left | run left |
+| 'S' | turn backward | walk stop -> Stand | walk -> Walk |
+| 'D' | - | turn right | run right |
+| 'E' | - | turn veer right | run veer right |
+| 'X' | jump | - | sudden stop, avoid -> Stand |
+| ' ' | forward jump | - | - |
+
