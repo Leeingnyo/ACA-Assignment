@@ -24,6 +24,7 @@
 				<Option projectLinkerOptionsRelation="0" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-static -static-libgcc -static-libstdc++" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -43,6 +44,8 @@
 		<Unit filename="bvh-parser/bvh-parser.cpp" />
 		<Unit filename="bvh-parser/bvh-parser.hpp" />
 		<Unit filename="camera/camera.h" />
+		<Unit filename="character-state.cpp" />
+		<Unit filename="character-state.hpp" />
 		<Unit filename="geomatric-primitives/common.cpp" />
 		<Unit filename="geomatric-primitives/common.hpp" />
 		<Unit filename="geomatric-primitives/cuboid.cpp" />
@@ -74,6 +77,10 @@
 		<Unit filename="kinematics/root-joint/root-joint.cpp" />
 		<Unit filename="kinematics/root-joint/root-joint.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="motions/motion-clip.hpp" />
+		<Unit filename="motions/motion-pack.hpp" />
+		<Unit filename="motions/motion.cpp" />
+		<Unit filename="motions/motion.hpp" />
 		<Unit filename="screen/screen.cpp" />
 		<Unit filename="screen/screen.h" />
 		<Extensions>

@@ -1,4 +1,9 @@
+#include <iostream>
+
+#include "../../Eigen/Dense"
+
 #include "../../bvh-parser/bvh-parser.hpp"
+#include "../../motions/motion-clip.hpp"
 #include "../open-gl-euler-joint/open-gl-euler-joint.hpp"
 #include "../open-gl-link/open-gl-link.hpp"
 #include "bvh-to-kinematics.hpp"
@@ -57,6 +62,27 @@ std::shared_ptr<RootJoint> bvh_to_kinematics(const std::shared_ptr<inyong_bvh::B
 
     root_joint->number_of_channels = number_of_channels;
     root_joint->animation_information = bvh->motion->motion_data;
+
+    const int length = bvh->motion->motion_data.size() / number_of_channels;
+    for (int i = 0; i < length; i++) {
+        Motion motion;
+        motion.position = Eigen::Vector3d{
+            bvh->motion->motion_data[i * number_of_channels + 0],
+            bvh->motion->motion_data[i * number_of_channels + 1],
+            bvh->motion->motion_data[i * number_of_channels + 2]
+        };
+        // X Y Z 라고 가정
+        for (int j = 1; j < number_of_channels / 3; j++) {
+            motion.orientations.push_back(Eigen::Quaterniond(
+                Eigen::AngleAxisd(bvh->motion->motion_data[i * number_of_channels + j * 3 + 0] * M_PI / 180.0, Eigen::Vector3d{0, 0, 1}) *
+                Eigen::AngleAxisd(bvh->motion->motion_data[i * number_of_channels + j * 3 + 1] * M_PI / 180.0, Eigen::Vector3d{1, 0, 0}) *
+                Eigen::AngleAxisd(bvh->motion->motion_data[i * number_of_channels + j * 3 + 2] * M_PI / 180.0, Eigen::Vector3d{0, 1, 0})
+            ));
+            // Z X Y 라고 가정
+        }
+        root_joint->motion_clip.motions.push_back(motion);
+    }
+    root_joint->motion_clip.frame_time = bvh->motion->frame_time;
 
     return root_joint;
 }

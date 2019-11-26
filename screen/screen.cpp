@@ -7,9 +7,12 @@
 #include "../glm/gtc/quaternion.hpp"
 #include "../glm/gtx/quaternion.hpp"
 
+#include "../character-state.hpp"
 #include "screen.h"
 
 Screen* Screen::current_screen;
+CharacterState* Screen::character_state;
+Motion const * Screen::m;
 
 void Screen::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     if (!is_mouse_left_clicked){
@@ -73,39 +76,68 @@ void Screen::key_callback(GLFWwindow* window, int key, int scancode, int action,
     } else {
         is_shift = false;
     }
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveUp();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveUp();
     }
-    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveLeft();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveLeft();
     }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveDown();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveDown();
     }
-    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera.moveRight();
         if (is_shift) for (int i = 0; i < 9; i++) camera.moveRight();
     }
-    if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS)) {
-        if (!is_paused) {
-            is_paused = true;
-            std::cout << "paused" << std::endl;
-        } else {
-            is_paused = false;
-            std::cout << "resume" << std::endl;
+
+    if (!character_state->is_busy) {
+        if (key == GLFW_KEY_W && (action == GLFW_PRESS)) {
+            character_state->input('W');
+        }
+        if (key == GLFW_KEY_Q && (action == GLFW_PRESS)) {
+            character_state->input('Q');
+        }
+        if (key == GLFW_KEY_A && (action == GLFW_PRESS)) {
+            character_state->input('A');
+        }
+        if (key == GLFW_KEY_S && (action == GLFW_PRESS)) {
+            character_state->input('S');
+        }
+        if (key == GLFW_KEY_D && (action == GLFW_PRESS)) {
+            character_state->input('D');
+        }
+        if (key == GLFW_KEY_E && (action == GLFW_PRESS)) {
+            character_state->input('E');
+        }
+        if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS)) {
+            character_state->input(' ');
+        }
+        if (key == GLFW_KEY_X && (action == GLFW_PRESS)) {
+            character_state->input('X');
         }
     }
-    if (key == GLFW_KEY_1 && (action == GLFW_PRESS)) {
-        scene_number = 1;
+
+    if (key == GLFW_KEY_V && (action == GLFW_PRESS)) {
+        is_blend_mode_off = !is_blend_mode_off;
+        std::cout << (is_blend_mode_off ? "Scene: blend mode disabled" : "Scene: blend mode enabled") << std::endl;
     }
-    if (key == GLFW_KEY_2 && (action == GLFW_PRESS)) {
-        scene_number = 2;
+    if (key == GLFW_KEY_P && (action == GLFW_PRESS)) {
+        camera.setEye(
+                    glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f - (camera.getOrigin() - camera.getEye())
+        );
+        camera.setOrigin(
+                    glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f
+        );
+        std::cout << "Scene: " << "move camera to player" << std::endl;
     }
-    if (key == GLFW_KEY_3 && (action == GLFW_PRESS)) {
-        scene_number = 3;
+    if (key == GLFW_KEY_T && (action == GLFW_PRESS)) {
+        if (is_fixed) {
+        }
+        is_fixed = !is_fixed;
+        std::cout << "Scene: " << (is_fixed ? "camera fixed" : "camera unfixed") << std::endl;
     }
 }
 
@@ -115,13 +147,16 @@ void Screen::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         camera.setEye(
             camera.getEye() + (float)yoffset * v * 0.1f
         );
+        camera.setOrigin(
+            camera.getOrigin() + (float)yoffset * v * 0.1f
+        );
     }
-    /*
     else {
-        fov -= yoffset * 0.5;
-        fov = Clamp(fov, 5, 60);
+        glm::vec3 v = glm::normalize(camera.getOrigin() - camera.getEye());
+        camera.setEye(
+            camera.getEye() + (float)yoffset * v * 0.1f
+        );
     }
-    */
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {

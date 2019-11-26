@@ -2,7 +2,7 @@
 
 #include "../glm/glm.hpp"
 
-#define TRANSLATION_UNIT (0.01f)
+#define TRANSLATION_UNIT (0.1f)
 
 class Camera {
 private:
@@ -21,6 +21,9 @@ public:
 
     void setEye(const glm::vec3& eye) {
         this->eye = eye;
+    }
+    void setOrigin(const glm::vec3& origin) {
+        this->ori = origin;
     }
     void setUp(const glm::vec3& up) {
         this->up = up;

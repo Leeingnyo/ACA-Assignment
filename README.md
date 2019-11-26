@@ -1,8 +1,9 @@
-# Advanced Computer Animation Assignment 03
+# Advanced Computer Animation Assignment 04
 
 1. kinematics
 2. bvh viewer
-3. inverse kinematics (current)
+3. inverse kinematics
+4. interactively-controllable character (current)
 
 ## Compile
 
@@ -49,31 +50,44 @@ make
 #### Compile
 
 1. Open AdvancedAnimationAssignment01.cbp
-2. Press 'F9'
-3. Press 'Ctrl + F10'
+2. Press 'F9' (Compile)
+3. Press 'Ctrl + F10' (Run)
 
 ## How to Run
-
-before run, prepare an bvh file please named 'Trial001.bvh' from [here](http://mrl.snu.ac.kr/courses/CourseAnimation/2014fall/MotionData.zip)
 
 ```
 make run
 ```
 
-## How to Use
-
-There are three scenes. Press '1', '2', '3' to switch scene, please.
-
-1. Scene 1. Crossing the legs (the left toes is on the right knee, and these are green parts), the human body rotates its hand (red parts) drawing the cycle (radius 5). And its head (blue one) is toward to up-front.
-2. Scene 2. The human body draws 'LOVE' with its right fingers.
-3. Scene 3. The human body stands.
-
-The default scene is the scene 3.
-
 ### Interfaces
 
-Drag the screen with your mouse to rotate the camera view.
-You can use 'WASD' keys for moving the focus of camera.
-You can zoom in and out the screen by scrolling with shift key.
+#### to controll viewer
 
-Press the 'space bar' key to stop the motion. To resume, press it again.
+##### using mouse
+
+Drag screen to rotate view of camera.
+Scroll to zoom in/out.
+Scroll with shift key to move camera back and forth.
+
+##### using keyboard
+
+| Key | Description |
+| --- | --- |
+| 'T' | bind the camera to the center of character |
+| 'P' | move the camera position to the center of character |
+| 'V' | toggle warping |
+| Arrow Keys | move the camera position |
+
+#### to controll character
+
+| Key \ State | Stand | Walk | Run |
+| --- | --- | --- | --- |
+| 'W' | walk start -> Walk | run -> Run | - |
+| 'Q' | - | turn veer left | run veer left |
+| 'A' | - | turn left | run left |
+| 'S' | turn backward | walk stop -> Stand | walk -> Walk |
+| 'D' | - | turn right | run right |
+| 'E' | - | turn veer right | run veer right |
+| 'X' | jump | - | sudden stop, avoid -> Stand |
+| ' ' | forward jump | - | - |
+

@@ -35,43 +35,31 @@
 
 #include "inverse-kinematics/inverse-kinematics.h"
 
+#include "motions/motion.hpp"
+#include "motions/motion-pack.hpp"
+
+#include "character-state.hpp"
+
 #ifndef __WIN32
 #define __int64 long long
 #endif // __WIN32
 
-void drawLove() {
-    glColor3f(0.7f, 0.7f, 0.7f);
-    glBegin(GL_LINES);
-    glVertex3f(4, 3, 1);
-    glVertex3f(4, 1, 1);
-    glVertex3f(4, 1, 1);
-    glVertex3f(2, 1, 1); // L
-    {
-        const int STEPS = 250;
-        const float UNIT_OF_THETA = 2 * M_PI / 250;
-        const float LENGTH = 1.f;
-        for (int i = 0; i < STEPS; i++) {
-            const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
-            const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);
-            const float Q0 = LENGTH * std::cos(UNIT_OF_THETA * (i+1));
-            const float Q1 = LENGTH * std::sin(UNIT_OF_THETA * (i+1));
-            glVertex3f(P0 + 1, P1 + 2, 1);
-            glVertex3f(Q0 + 1, Q1 + 2, 1);
-        }
-    } // O
-    glVertex3f(0, 3, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(-2, 3, 1); // V
-    glVertex3f(-2, 3, 1);
-    glVertex3f(-4, 3, 1);
-    glVertex3f(-2, 3, 1);
-    glVertex3f(-2, 1, 1);
-    glVertex3f(-2, 1, 1);
-    glVertex3f(-4, 1, 1);
-    glVertex3f(-2, 2, 1);
-    glVertex3f(-4, 2, 1); // E
-    glEnd();
+std::shared_ptr<RootJoint> load_motion(inyong_bvh::BvhParser& parser, const char* filename) {
+    std::ifstream bvh_file(filename);
+    std::string file_content;
+    if (bvh_file.is_open()) {
+        std::stringstream string_stream;
+        string_stream << bvh_file.rdbuf();
+        file_content = string_stream.str();
+        bvh_file.close();
+        auto&& bvh_tokens = parser.scan_from_string(file_content);
+        auto&& bvh = parser.parse_from_tokens(bvh_tokens);
+        std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
+        return std::dynamic_pointer_cast<RootJoint>(bvh_kinematics);
+    } else {
+        std::cout << "Can't open the file \"" << filename << "\"" << std::endl;
+        return nullptr;
+    }
 }
 
 int main (int argc, char* argv[]) {
@@ -85,7 +73,7 @@ int main (int argc, char* argv[]) {
     }
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(960, 720, "IK", NULL, NULL);
+    window = glfwCreateWindow(960, 720, "Controllable Character", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -109,116 +97,129 @@ int main (int argc, char* argv[]) {
     // glEnable(GL_LIGHT0);
     // glEnable(GL_COLOR_MATERIAL);
 
-    /*
-    if (argc <= 1) {
-        std::cout << "Please give bvh file path as the first argument" << std::endl;
-        return -1;
-    }
-    std::ifstream bvh_file(argv[1]);
-    */
-    std::ifstream bvh_file("Trial001.bvh");
-    std::string file_content;
-    if (bvh_file.is_open()) {
-        std::stringstream string_stream;
-        string_stream << bvh_file.rdbuf();
-        file_content = string_stream.str();
-        bvh_file.close();
-    } else {
-        std::cout << "Can't open the file" << std::endl;
-        return -2;
-    }
     inyong_bvh::BvhParser parser = inyong_bvh::BvhParser();
-    auto bvh_tokens = parser.scan_from_string(file_content);
-    auto bvh = parser.parse_from_tokens(bvh_tokens);
-    std::shared_ptr<EulerJoint> bvh_kinematics = bvh_to_kinematics(bvh);
 
-    std::shared_ptr<OpenGLEulerJoint> root = std::make_shared<OpenGLEulerJoint>();
-    root->channel_values = bvh_kinematics->channel_values;
-    root->channels = bvh_kinematics->channels;
-    root->links = bvh_kinematics->links;
-    root->related_position = bvh_kinematics->related_position;
+    // from cmu
+    std::shared_ptr<RootJoint> root = load_motion(parser, "motion-data/stand.bvh");
+    std::shared_ptr<RootJoint> stand = load_motion(parser, "motion-data/stand.bvh");
+    std::shared_ptr<RootJoint> turn_left = load_motion(parser, "motion-data/turn_left.bvh");
+    std::shared_ptr<RootJoint> veer_left = load_motion(parser, "motion-data/veer_left.bvh");
+    std::shared_ptr<RootJoint> turn_right = load_motion(parser, "motion-data/turn_right.bvh");
+    std::shared_ptr<RootJoint> veer_right = load_motion(parser, "motion-data/veer_right.bvh");
+    std::shared_ptr<RootJoint> walk = load_motion(parser, "motion-data/walk.bvh");
+    std::shared_ptr<RootJoint> walk_start = load_motion(parser, "motion-data/walk_start.bvh");
+    std::shared_ptr<RootJoint> walk_stop = load_motion(parser, "motion-data/walk_stop.bvh");
+    std::shared_ptr<RootJoint> run = load_motion(parser, "motion-data/run.bvh");
+    std::shared_ptr<RootJoint> run_left = load_motion(parser, "motion-data/run_left.bvh");
+    std::shared_ptr<RootJoint> run_right = load_motion(parser, "motion-data/run_right.bvh");
+    std::shared_ptr<RootJoint> run_veer_left = load_motion(parser, "motion-data/run_veer_left.bvh");
+    std::shared_ptr<RootJoint> run_veer_right = load_motion(parser, "motion-data/run_veer_right.bvh");
+    std::shared_ptr<RootJoint> jump = load_motion(parser, "motion-data/jump.bvh");
+    std::shared_ptr<RootJoint> forward_jump = load_motion(parser, "motion-data/stand-jump.bvh");
+    std::shared_ptr<RootJoint> running_stop = load_motion(parser, "motion-data/sudden-stop.bvh");
 
-    // TODO 인간클래스로 빼기?
-    std::shared_ptr<OpenGLLink> llhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lltibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jltoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lltoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    // from mrl
+    std::shared_ptr<RootJoint> turn_backward = load_motion(parser, "motion-data/turn-backward.bvh");
+    std::shared_ptr<RootJoint> trial001 = load_motion(parser, "motion-data/Trial001.bvh");
+    {
+        const auto look_toward = Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+        for (Motion& motion : turn_backward->motion_clip.motions) {
+            motion.position = look_toward * motion.position;
+            motion.orientations[0] = motion.orientations[0] * look_toward;
+        }
+    }
+    {
+        const auto look_toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+        for (Motion& motion : trial001->motion_clip.motions) {
+            motion.position = look_toward * motion.position;
+            motion.orientations[0] = motion.orientations[0] * look_toward;
+        }
+    }
+    // motion data
 
-    std::shared_ptr<OpenGLLink> lrhip = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]);
-    std::shared_ptr<OpenGLEulerJoint> jrhip = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrfemur = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrknee = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrtibia = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrankle = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrfoot = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrtoes = std::dynamic_pointer_cast<OpenGLEulerJoint>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrtoes = std::dynamic_pointer_cast<OpenGLLink>(root->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    MotionPack p_stand("stand", 0, 20, 19, &stand->motion_clip);
+    MotionPack p_turn_left("turn left", 53, 117, 20, &turn_left->motion_clip);
+    MotionPack p_veer_left("veer left", 32, 97, 20, &veer_left->motion_clip);
+    MotionPack p_turn_right("turn right", 38, 78, 20, &turn_right->motion_clip);
+    MotionPack p_veer_right("veer right", 18, 87, 20, &veer_right->motion_clip);
+    MotionPack p_walk("walk", 0, 35, 20, &walk->motion_clip);
+    MotionPack p_walk_start("walk start", 2, 61, 40, &walk_start->motion_clip);
+    MotionPack p_walk_stop("walk stop", 22, 64, 20, &walk_stop->motion_clip);
+    MotionPack p_run("run", 1, 25, 25, &run->motion_clip);
+    MotionPack p_run_left("run left", 8, 28, 20, &run_left->motion_clip);
+    MotionPack p_run_right("run right", 20, 38, 20, &run_right->motion_clip);
+    MotionPack p_run_veer_left("run veer left", 10, 32, 20, &run_veer_left->motion_clip);
+    MotionPack p_run_veer_right("run veer right", 9, 29, 20, &run_veer_right->motion_clip);
+    MotionPack p_jump("jump", 0, 116, 20, &jump->motion_clip);
+    MotionPack p_forward_jump("forward jump", 0, 73, 20, &forward_jump->motion_clip);
+    MotionPack p_sudden_stop("sudden stop", 16, 59, 20, &running_stop->motion_clip);
 
-    std::shared_ptr<OpenGLLink> lthip = std::dynamic_pointer_cast<OpenGLLink>(root->links[2]);
-    std::shared_ptr<OpenGLEulerJoint> jbackbone = std::dynamic_pointer_cast<OpenGLEulerJoint>(lthip->joints[0]);
-    std::shared_ptr<OpenGLLink> lchest = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jneck = std::dynamic_pointer_cast<OpenGLEulerJoint>(lchest->joints[0]);
-    std::shared_ptr<OpenGLLink> lhead = std::dynamic_pointer_cast<OpenGLLink>(jneck->links[0]);
+    MotionPack p_turn_backward("turn backward", 250, 320, 30, &turn_backward->motion_clip);
+    MotionPack p_avoid("avoid", 430, 570, 40, &trial001->motion_clip);
+    // wrap motions
 
-    std::shared_ptr<OpenGLLink> llchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]);
-    std::shared_ptr<OpenGLEulerJoint> jlarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]);
-    std::shared_ptr<OpenGLLink> llclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jlwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> llhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[1]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    p_walk_start.default_next =
+            p_veer_left.default_next =
+            p_veer_right.default_next =
+            p_turn_left.default_next =
+            p_turn_right.default_next = &p_walk;
+    p_walk_stop.default_next =
+            p_avoid.default_next =
+            p_turn_backward.default_next =
+            p_jump.default_next =
+            p_forward_jump.default_next = &p_stand;
+    p_run_left.default_next =
+            p_run_right.default_next =
+            p_run_veer_left.default_next =
+            p_run_veer_right.default_next = &p_run;
+    p_sudden_stop.default_next = &p_avoid;
 
-    std::shared_ptr<OpenGLLink> lrchest_arm = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]);
-    std::shared_ptr<OpenGLEulerJoint> jrarm_to_shulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrclavicle = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrshoulder = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrhumerus = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrelbow = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrradius = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
-    std::shared_ptr<OpenGLEulerJoint> jrwrist = std::dynamic_pointer_cast<OpenGLEulerJoint>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]);
-    std::shared_ptr<OpenGLLink> lrhand = std::dynamic_pointer_cast<OpenGLLink>(jbackbone->links[2]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]->joints[0]->links[0]);
+    static CharacterState character_state;
+    screen.character_state = &character_state;
+    character_state.previous_motion = p_stand.motion_clip->motions.back();
 
-    auto joints = std::vector<std::shared_ptr<OpenGLEulerJoint>>{
-        root,
-        jlhip, jlknee, jlankle, jltoes,
-        jrhip, jrankle, jrtoes,
-        jbackbone, jneck,
-        jlarm_to_shulder, jlshoulder, jlelbow, jlwrist,
-        jrarm_to_shulder, jrshoulder, jrelbow, jrwrist
-    };
+    for (State s : std::vector<State>{State::CS_STAND, State::CS_WALK, State::CS_RUN}) {
+        for (char c : std::vector<char>{'W', 'Q', 'A', 'S', 'D', 'E', 'X', ' '}) {
+            character_state.input_map[s][c] = std::pair<MotionPack const *, State>(nullptr, s);
+        }
+    }
+    character_state.input_map[State::CS_STAND]['W'] = std::pair<MotionPack const *, State>(&p_walk_start, State::CS_WALK);
+    character_state.input_map[State::CS_STAND]['S'] = std::pair<MotionPack const *, State>(&p_turn_backward, State::CS_STAND);
+    character_state.input_map[State::CS_STAND]['X'] = std::pair<MotionPack const *, State>(&p_jump, State::CS_STAND);
+    character_state.input_map[State::CS_STAND][' '] = std::pair<MotionPack const *, State>(&p_forward_jump, State::CS_STAND);
 
-    lhead->cylinder_color.x = 0.5;
-    lhead->cylinder_color.y = 0.5;
+    character_state.input_map[State::CS_WALK]['W'] = std::pair<MotionPack const *, State>(&p_run, State::CS_RUN);
+    character_state.input_map[State::CS_WALK]['Q'] = std::pair<MotionPack const *, State>(&p_veer_left, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['A'] = std::pair<MotionPack const *, State>(&p_turn_left, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['S'] = std::pair<MotionPack const *, State>(&p_walk_stop, State::CS_STAND);
+    character_state.input_map[State::CS_WALK]['D'] = std::pair<MotionPack const *, State>(&p_turn_right, State::CS_WALK);
+    character_state.input_map[State::CS_WALK]['E'] = std::pair<MotionPack const *, State>(&p_veer_right, State::CS_WALK);
 
-    llhand->cylinder_color.y = 0.5;
-    llhand->cylinder_color.z = 0.5;
-    lrhand->cylinder_color.y = 0.5;
-    lrhand->cylinder_color.z = 0.5;
+    character_state.input_map[State::CS_RUN]['Q'] = std::pair<MotionPack const *, State>(&p_run_veer_left, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['A'] = std::pair<MotionPack const *, State>(&p_run_left, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['S'] = std::pair<MotionPack const *, State>(&p_walk, State::CS_WALK);
+    character_state.input_map[State::CS_RUN]['D'] = std::pair<MotionPack const *, State>(&p_run_right, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['E'] = std::pair<MotionPack const *, State>(&p_run_veer_right, State::CS_RUN);
+    character_state.input_map[State::CS_RUN]['X'] = std::pair<MotionPack const *, State>(&p_sudden_stop, State::CS_STAND);
+    // input mapping
 
-    lltoes->cylinder_color.x = 0.5;
-    lltoes->cylinder_color.z = 0.5;
-    llfemur->cylinder_color.x = 0.5;
-    llfemur->cylinder_color.z = 0.5;
-    lrfemur->cylinder_color.x = 0.5;
-    lrfemur->cylinder_color.z = 0.5;
+    character_state.current_motion = &p_stand;
+    character_state.next_motion = nullptr;
+    MotionPack const *next_motion = &p_stand;
+    // get default next function
+    // stand -> stand, walk -> walk straight, run -> run straight
+
+    Eigen::Vector3d global_position = character_state.previous_motion.position;
+    Eigen::Quaterniond global_orientation = character_state.previous_motion.orientations[0];
+    {
+        Eigen::AngleAxisd angle = Eigen::AngleAxisd(global_orientation);
+        Eigen::Vector3d axis = angle.axis();
+        axis[0] = axis[2] = 0;
+        global_orientation = Eigen::Quaterniond(Eigen::AngleAxisd(angle.angle(), axis));
+    }
 
     auto starttime = std::chrono::system_clock::now();
 
-    // auto destination = Eigen::Vector3d{2.12132, 2.12132, -1};
-    auto destination = Eigen::Vector3d{1.1446, -9, 2};
-    auto toward = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d(0, 0, 1))) *
-            Eigen::Quaterniond(Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d(1, 0, 0)));
-            // Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d(0, 0, 1)));
-    auto to2 = Eigen::Vector3d{2, 2, 0};
-
-    int frame = 0;
     while (!glfwWindowShouldClose(window)) {
         // Render here
         glfwGetFramebufferSize(window, Screen::current_screen->getWidthPointer(),
@@ -226,179 +227,60 @@ int main (int argc, char* argv[]) {
         glViewport(0, 0, Screen::current_screen->getWidth(), Screen::current_screen->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        static Motion m;
+        screen.m = &m;
+
         { // animate
             auto current = std::chrono::system_clock::now();
             unsigned __int64 delta_micro = std::chrono::duration_cast<std::chrono::microseconds>(current - starttime).count();
             unsigned __int64 delta_milli = std::chrono::duration_cast<std::chrono::milliseconds>(current - starttime).count();
 
-            static int scene_number = screen.getSceneNumber();
-            if (!screen.isPaused()) {
-                if (scene_number != screen.getSceneNumber()) {
-                    frame = 0;
-                    scene_number = screen.getSceneNumber();
-                    for (const auto& joint : joints) {
-                        for (int i = 0; i < joint->channel_values.size(); i++) {
-                            joint->channel_values[i] = 0;
-                        }
-                    }
-                    std::cout << "choose scene " << scene_number << std::endl;
-                }
-                switch (screen.getSceneNumber()) {
-                    case 3: {
-                    } break;
-                    case 2: {
-                        static int passed_frame = 0;
-                        drawLove();
+            int current_frame = (int)(delta_milli / character_state.current_motion->motion_clip->frame_time / 1000);
+            int total_frame = character_state.current_motion->length;
+            int offset = character_state.current_motion->start;
 
-                        if (frame < 100) {
-                            if (frame < 50) {
-                                passed_frame = 0;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{4, 3 - frame * 2 / 50.0, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else {
-                                passed_frame = 50;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{4 - (frame - passed_frame) * 2 / 50.0, 1, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        else if (frame < 200) {
-                            passed_frame = 100;
-                            ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                    Eigen::Vector3d{
-                                        std::cos((frame - passed_frame) * 2 * M_PI / 100.0) + 1,
-                                        std::sin((frame - passed_frame) * 2 * M_PI / 100.0) + 2,
-                                        1
-                                    }
-                                )),
-                                std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                    Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                )),
-                            });
-                        }
-                        else if (frame < 300) {
-                            if (frame < 250) {
-                                passed_frame = 200;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{
-                                            0 - (frame - passed_frame) / 50.0,
-                                            3 - (frame - passed_frame) / 50.0 * 2,
-                                            1
-                                        }
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            } else {
-                                passed_frame = 250;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{
-                                            -1 - (frame - passed_frame) / 50.0,
-                                            1 + (frame - passed_frame) / 50.0 * 2,
-                                            1
-                                        }
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        else {
-                            if (frame < 325) {
-                                passed_frame = 300;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 3, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else if (frame < 350) {
-                                passed_frame = 325;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2, 3 - (frame - passed_frame) / 25.0 * 2, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else if (frame < 375) {
-                                passed_frame = 350;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 1, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                            else {
-                                passed_frame = 375;
-                                ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Vector3d{-2 - (frame - passed_frame) / 25.0 * 2, 2, 1}
-                                    )),
-                                    std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrhand, Transform(
-                                        Eigen::Quaterniond(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d{1, 0, 0}))
-                                    )),
-                                });
-                            }
-                        }
-                        if (++frame >= 400) frame = 0;
-                    } break;
-                    default: {
-                        frame++;
-                        const double theta = frame * 0.02 * M_PI;
-                        const double cos = std::cos(theta);
-                        const double sin = std::sin(theta);
-                        ik_moves(std::vector<std::tuple<std::shared_ptr<Joint>, std::shared_ptr<Link>, Transform>>{
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, llhand, Transform(
-                                Eigen::Vector3d{cos * 5 + 0.5, sin * 5, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lhead, Transform(
-                                Eigen::Quaterniond(Eigen::AngleAxisd(0, Eigen::Vector3d{0, 0, 1}))
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(jbackbone, lrhand, Transform(
-                                Eigen::Vector3d{cos * 5 - 0.5, sin * 5, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lrfemur, Transform(
-                                Eigen::Vector3d{-1.4, -4, 1}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, llfemur, Transform(
-                                Eigen::Vector3d{1, -4, 0}
-                            )),
-                            std::make_tuple<std::shared_ptr<EulerJoint>, std::shared_ptr<Link>, Transform>(root, lltoes, Transform(
-                                Eigen::Vector3d{-1.4, -4, 1}
-                            )),
-                        });
-                        break;
-                    }
+            if (current_frame < total_frame) {
+            } else {
+                Motion m = character_state.current_motion->motion_clip->motions[current_frame + offset - 1];
+                m.position = global_orientation * (m.position - character_state.current_motion->motion_clip->motions[offset].position) + global_position;
+                m.orientations[0] = global_orientation * m.orientations[0];
+                global_position = m.position;
+                global_orientation = m.orientations[0];
+                Eigen::AngleAxisd angle = Eigen::AngleAxisd(global_orientation);
+                Eigen::Vector3d axis = angle.axis();
+                axis[0] = axis[2] = 0;
+                global_orientation = Eigen::Quaterniond(Eigen::AngleAxisd(angle.angle(), axis));
+
+                character_state.previous_motion = m;
+                if (character_state.current_motion != next_motion) {
+                    std::cout << "Motion Changed: current motion is '" << next_motion->name << "'" << std::endl;
                 }
+                character_state.current_motion = next_motion;
+                if (character_state.is_busy) {
+                    next_motion = character_state.next_motion;
+                    character_state.next_motion = nullptr;
+                    character_state.is_busy = false;
+                } else {
+                    next_motion = next_motion->default_next;
+                }
+                starttime = current;
+                current_frame = 0;
             }
-            // ik_move(destination, toward, jbackbone, llhand);
-            // root->animate((int)(delta_milli / bvh->motion->frame_time / 1000) % bvh->motion->number_of_frames);
+
+            offset = character_state.current_motion->start;
+            m = character_state.current_motion->motion_clip->motions[current_frame + offset];
+            Motion current_motion_start = character_state.current_motion->motion_clip->motions[offset];
+            m.position = global_orientation * (m.position - current_motion_start.position) + global_position;
+            m.orientations[0] = global_orientation * m.orientations[0];
+            current_motion_start.position = global_orientation * (current_motion_start.position - current_motion_start.position) + global_position;
+            current_motion_start.orientations[0] = global_orientation * current_motion_start.orientations[0];
+            if (!Screen::current_screen->is_blend_mode_off && current_frame < character_state.current_motion->blend) {
+                Displacement d = (character_state.previous_motion - current_motion_start) *
+                        ((std::cos(M_PI / character_state.current_motion->blend * current_frame) + 1) / 2.0);
+                m = m + d;
+            }
+
+            root->animate_with(m);
         }
 
         { // projection
@@ -407,10 +289,18 @@ int main (int argc, char* argv[]) {
             gluPerspective(Screen::current_screen->getCamera().getFov(),
                     Screen::current_screen->getAspect(), 0.1f, 100.0f);
 
-            const glm::vec3& eye = Screen::current_screen->getCamera().getEye();
-            const glm::vec3& ori = Screen::current_screen->getCamera().getOrigin();
-            const glm::vec3& up = Screen::current_screen->getCamera().getUp();
-            gluLookAt(eye.x, eye.y, eye.z, ori.x, ori.y, ori.z, up.x, up.y, up.z);
+            const glm::vec3& eye = Screen::current_screen->getEye();
+            const glm::vec3& ori = Screen::current_screen->getOrigin();
+            const glm::vec3& up = Screen::current_screen->getUp();
+            gluLookAt(
+                eye.x,
+                eye.y,
+                eye.z,
+                ori.x,
+                ori.y,
+                ori.z,
+                up.x, up.y, up.z
+            );
         }
 
         { // display
@@ -428,6 +318,7 @@ int main (int argc, char* argv[]) {
 
             root->draw();
 
+            /*
             glBegin(GL_LINES);
             glColor3f(1, 0, 0);
             glVertex3f(-10, 0, 0);
@@ -441,6 +332,7 @@ int main (int argc, char* argv[]) {
             glVertex3f(0, 0, -10);
             glVertex3f(0, 0, 10); // z
             glEnd();
+            */
 
             /*
             glPushMatrix();
@@ -469,24 +361,43 @@ int main (int argc, char* argv[]) {
 
             glPushMatrix();
             { // display object independently of camera
-                const auto& origin = Screen::current_screen->getCamera().getOrigin();
-                glTranslatef(origin.x, origin.y, origin.z);
+                const float LENGTH = 7.5f;
+                const auto& origin = Screen::current_screen->getOrigin();
+                glTranslatef(
+                    origin.x,
+                    origin.y,
+                    origin.z
+                );
+
+                glBegin(GL_LINES);
+                {
+                    RGBColor(255, 0, 0);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(LENGTH, 0, 0);
+                    RGBColor(0, 255, 0);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(0, LENGTH, 0);
+                    RGBColor(0, 0, 255);
+                    glVertex3f(0, 0, 0);
+                    glVertex3f(0, 0, LENGTH);
+                }
+                glEnd();
+
                 GLfloat matrix[16];
-                getRotation(matrix, Screen::current_screen->getCamera().getEye() -
-                        Screen::current_screen->getCamera().getOrigin(),
-                        Screen::current_screen->getCamera().getUp());
+                getRotation(matrix, Screen::current_screen->getEye() -
+                        Screen::current_screen->getOrigin(),
+                        Screen::current_screen->getUp());
                 glMultMatrixf(matrix);
 
 
                 static auto start = std::chrono::system_clock::now();
                 // glRotatef(((std::chrono::system_clock::now() - start).count() / 1000000) % 360, 0, 0, 1);
 
-                RGBColor(255, 255, 255);
                 glBegin(GL_LINES);
                 {
                     const int STEPS = 180;
                     const float UNIT_OF_THETA = 2 * M_PI / 180;
-                    const float LENGTH = 7.5f;
+                    RGBColor(255, 255, 255);
                     for (int i = 0; i < 180; i++) {
                         const float P0 = LENGTH * std::cos(UNIT_OF_THETA * i);
                         const float P1 = LENGTH * std::sin(UNIT_OF_THETA * i);

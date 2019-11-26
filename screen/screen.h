@@ -1,5 +1,9 @@
 #include "../camera/camera.h"
 
+#include "../motions/motion.hpp"
+
+class CharacterState;
+
 class Screen {
 private:
     Camera camera;
@@ -9,14 +13,16 @@ private:
     bool is_mouse_left_clicked = false;
     bool is_previous_position_available = false;
     bool is_shift = false;
-    bool is_paused = false;
-    unsigned int scene_number = 3;
+    bool is_fixed = false;
 
     double prev_x;
     double prev_y;
     double prev_z;
 public:
     static Screen* current_screen;
+    static CharacterState* character_state;
+    static Motion const * m;
+    bool is_blend_mode_off = false;
 
     Screen() : camera() {
     }
@@ -29,16 +35,22 @@ public:
         return camera;
     }
 
+    glm::vec3 getOrigin() const {
+        if (is_fixed) return
+                        glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f;
+        return camera.getOrigin();
+    }
+    glm::vec3 getEye() const {
+        if (is_fixed) return camera.getEye() - camera.getOrigin() +
+                        glm::vec3(m->position(0), m->position(1), m->position(2)) * 0.1f;
+        return camera.getEye();
+    }
+    glm::vec3 getUp() const {
+        return camera.getUp();
+    }
+
     float getAspect() const {
         return width / (float) height;
-    }
-
-    bool isPaused() {
-        return is_paused;
-    }
-
-    int getSceneNumber() {
-        return scene_number;
     }
 
     int getWidth() const {

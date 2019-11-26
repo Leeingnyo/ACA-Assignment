@@ -1,7 +1,7 @@
 #include "../../GLFW/glfw3.h"
-#include "../../glm/glm.hpp"
 
 #include <cstdio>
+#include <iostream>
 #include <memory>
 
 #include "../euler-joint/euler-joint.hpp"
@@ -13,12 +13,12 @@
 void RootJoint::animate(const int frame_index, std::shared_ptr<Link> link) {
     for (const auto& joint : link->joints) {
         const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
-        const int length = euler_joint->channels.size();
 
         euler_joint->channel_values.clear();
-        for (int i = 0; i < length; i++) {
-            euler_joint->channel_values.push_back(animation_information[frame_index * number_of_channels + channel_index++]);
-        }
+        auto euler = motion_clip.motions[frame_index].orientations[motion_orientation_index++].toRotationMatrix().eulerAngles(2, 0, 1);
+        euler_joint->channel_values.push_back(euler[0] * 180.0 / M_PI);
+        euler_joint->channel_values.push_back(euler[1] * 180.0 / M_PI);
+        euler_joint->channel_values.push_back(euler[2] * 180.0 / M_PI);
 
         for (const auto& link : joint->links) {
             animate(frame_index, link);
@@ -27,14 +27,52 @@ void RootJoint::animate(const int frame_index, std::shared_ptr<Link> link) {
 }
 
 void RootJoint::animate(const int frame_index) {
-    channel_index = 0;
-    int number = 0;
+    motion_orientation_index = 0;
+
     channel_values.clear();
-    for (int i = 0; i < channels.size(); i++) {
-        channel_values.push_back(animation_information[frame_index * number_of_channels + channel_index++]);
-    }
+    channel_values.push_back(motion_clip.motions[frame_index].position[0]);
+    channel_values.push_back(motion_clip.motions[frame_index].position[1]);
+    channel_values.push_back(motion_clip.motions[frame_index].position[2]);
+    auto euler = motion_clip.motions[frame_index].orientations[motion_orientation_index++].toRotationMatrix().eulerAngles(2, 0, 1);
+    channel_values.push_back(euler[0] * 180.0 / M_PI);
+    channel_values.push_back(euler[1] * 180.0 / M_PI);
+    channel_values.push_back(euler[2] * 180.0 / M_PI);
+
     for (const auto& link : links) {
         animate(frame_index, link);
+    }
+}
+
+void RootJoint::animate_with(const Motion& motion, std::shared_ptr<Link> link) {
+    for (const auto& joint : link->joints) {
+        const auto& euler_joint = std::dynamic_pointer_cast<EulerJoint>(joint);
+
+        euler_joint->channel_values.clear();
+        auto euler = motion.orientations[motion_orientation_index++].toRotationMatrix().eulerAngles(2, 0, 1);
+        euler_joint->channel_values.push_back(euler[0] * 180.0 / M_PI);
+        euler_joint->channel_values.push_back(euler[1] * 180.0 / M_PI);
+        euler_joint->channel_values.push_back(euler[2] * 180.0 / M_PI);
+
+        for (const auto& link : joint->links) {
+            animate_with(motion, link);
+        }
+    }
+}
+
+void RootJoint::animate_with(const Motion& motion) {
+    motion_orientation_index = 0;
+
+    channel_values.clear();
+    channel_values.push_back(motion.position[0]);
+    channel_values.push_back(motion.position[1]);
+    channel_values.push_back(motion.position[2]);
+    auto euler = motion.orientations[motion_orientation_index++].toRotationMatrix().eulerAngles(2, 0, 1);
+    channel_values.push_back(euler[0] * 180.0 / M_PI);
+    channel_values.push_back(euler[1] * 180.0 / M_PI);
+    channel_values.push_back(euler[2] * 180.0 / M_PI);
+
+    for (const auto& link : links) {
+        animate_with(motion, link);
     }
 }
 
